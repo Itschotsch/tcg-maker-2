@@ -5,7 +5,7 @@ import logging
 import os
 import uvicorn
 
-from web import main_page
+from web import card_renderer, main_page
 
 log: logging.Logger = logging.getLogger(__name__)
 
@@ -23,6 +23,7 @@ templates_dir = os.path.join(os.path.dirname(__file__), "templates")
 templates = Jinja2Templates(directory=templates_dir)
 log.debug(f"Templates directory set: {templates_dir}")
 
+app.include_router(card_renderer.router)
 app.include_router(main_page.router)
 
 def run(

@@ -15,6 +15,19 @@
                 <a class="navbar-item" href="/">
                     <h1 class="title">{% if title is defined %}{{ title }}{% else %}TCG Maker 2{% endif %}</h1>
                 </a>
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="mainNavBar">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+            <div id="mainNavBar" class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item" href="/card_renderer">
+                        Renderer
+                    </a>
+                </div>
             </div>
         </nav>
     </header>
@@ -28,6 +41,7 @@
     <footer>
         <p class="has-text-centered">&copy; {{ now.year }} by {% if author is defined %}{{ author }}{% else %}Aetherlab{% endif %}</p>
     </footer>
+    <script src="static/js/bulma.js"></script>
 </body>
 
 </html>

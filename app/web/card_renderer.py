@@ -8,7 +8,7 @@ from web import web_server
 router = APIRouter()
 
 @router.get("/card_renderer")
-def main(request: Request):
+async def main(request: Request):
     return web_server.templates.TemplateResponse(
         "card_renderer.jinja",
         {
@@ -20,3 +20,35 @@ def main(request: Request):
             "now": datetime.now(),
         }
     )
+
+@router.post("/card_renderer")
+async def render_cards(request: Request):
+    form_data = await request.form()
+    input_adapter_name = form_data.get("input_adapter")
+    output_adapter_name = form_data.get("output_adapter")
+
+    # Find the selected input adapter
+    input_adapter: input_manager.InputAdapter
+    try:
+         input_adapter = input_manager.get_adapter_by_name(input_adapter_name)
+    except ValueError:
+        return {"error": f"Input adapter '{input_adapter_name}' not found."}
+
+    # Find the selected output adapter
+    output_adapter: output_manager.OutputAdapter
+    try:
+        output_adapter = output_manager.get_adapter_by_name(output_adapter_name)
+    except ValueError:
+        return {"error": f"Output adapter '{output_adapter_name}' not found."}
+
+    # Read data using the input adapter
+    data = input_adapter.read()
+
+    # Render cards using the output adapter
+    rendered_output = output_adapter.write(data)
+
+    return {"output": rendered_output}
+
+def render(data: dict) -> dict:
+    # Placeholder render function
+    return {"rendered_data": data}

@@ -5,10 +5,13 @@ import os
 
 from web import web_server
 
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 def main():
+    load_dotenv()
+    log_level = os.getenv("LOG_LEVEL", "INFO").upper()
+    logging.basicConfig(level=log_level)
+
     parser = ArgumentParser()
     parser.add_argument("--port", type=int, help="Port to run the web server on")
     parser.add_argument("--host", type=str, help="Host to run the web server on")
@@ -20,7 +23,6 @@ def main():
     port: int = 8000
 
     # Values set in .env
-    load_dotenv()
     if os.getenv("HOST"):
         host = os.getenv("HOST")
     if os.getenv("PORT"):

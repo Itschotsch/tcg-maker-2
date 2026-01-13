@@ -4,5 +4,5 @@ from fastapi.responses import RedirectResponse
 router = APIRouter()
 
 @router.get("/")
-def main(request: Request):
+async def main(request: Request):
     return RedirectResponse(url="/card_renderer")

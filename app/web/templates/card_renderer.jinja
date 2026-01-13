@@ -8,9 +8,9 @@
             <label class="label">Input Adapter</label>
             <div class="control">
                 <div class="select">
-                    <select name="option">
+                    <select name="input_adapter">
                         {% for input_adapter in input_adapters %}
-                        <option value="{{ input_adapter }}">{{ input_adapter.name }}</option>
+                        <option value="{{ input_adapter.name }}">{{ input_adapter.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -20,9 +20,9 @@
             <label class="label">Output Adapter</label>
             <div class="control">
                 <div class="select">
-                    <select name="option">
+                    <select name="output_adapter">
                         {% for output_adapter in output_adapters %}
-                        <option value="{{ output_adapter }}">{{ output_adapter.name }}</option>
+                        <option value="{{ output_adapter.name }}">{{ output_adapter.name }}</option>
                         {% endfor %}
                     </select>
                 </div>

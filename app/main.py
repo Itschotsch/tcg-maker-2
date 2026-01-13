@@ -1,14 +1,14 @@
 from argparse import ArgumentParser
 from dotenv import load_dotenv
+import logging
 import os
 
-from web.web_server import WebServer
+from web import web_server
 
-server: WebServer
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 def main():
-    global server
-
     parser = ArgumentParser()
     parser.add_argument("--port", type=int, help="Port to run the web server on")
     parser.add_argument("--host", type=str, help="Host to run the web server on")
@@ -32,8 +32,7 @@ def main():
     if args.port:
         port = args.port
 
-    server = WebServer(host=host, port=port)
-    server.run(reload=args.reload)
+    web_server.run(host=host, port=port, reload=args.reload)
 
 if __name__ == "__main__":
     main()

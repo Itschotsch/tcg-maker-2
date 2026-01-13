@@ -3,38 +3,36 @@
 {% block content %}
 <h1 class="title">Card Renderer</h1>
 <form action="/card_renderer" method="post">
-    <fieldset>
-        <div class="columns is-mobile is-multiline">
-            <div class="column is-half small-padding">
-                <label class="label">Input Adapter:</label>
-                <div class="control">
-                    <div class="select">
-                        <select name="option">
-                            {% for input_adapter in input_adapters %}
-                            <option value="{{ input_adapter }}">{{ input_adapter.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+    <fieldset class="field is-grouped">
+        <div>
+            <label class="label">Input Adapter</label>
+            <div class="control">
+                <div class="select">
+                    <select name="option">
+                        {% for input_adapter in input_adapters %}
+                        <option value="{{ input_adapter }}">{{ input_adapter.name }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
             </div>
-            <div class="column is-half small-padding">
-                <label class="label">Output Adapter:</label>
-                <div class="control">
-                    <div class="select">
-                        <select name="option">
-                            {% for output_adapter in output_adapters %}
-                            <option value="{{ output_adapter }}">{{ output_adapter.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+        </div>
+        <div>
+            <label class="label">Output Adapter</label>
+            <div class="control">
+                <div class="select">
+                    <select name="option">
+                        {% for output_adapter in output_adapters %}
+                        <option value="{{ output_adapter }}">{{ output_adapter.name }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
             </div>
         </div>
     </fieldset>
-    <div class="field">
+    <fieldset class="field">
         <div class="control">
             <button class="button is-primary" type="submit">Submit</button>
         </div>
-    </div>
+    </fieldset>
 </form>
 {% endblock %}

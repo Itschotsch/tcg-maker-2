@@ -1,11 +1,11 @@
 from typing import List
 
 from output.output_adapter import OutputAdapter
-from output.json_download_output_adapter import JSONDownloadOutputAdapter
+from output.csv_download_output_adapter import CSVDownloadOutputAdapter
 from output.lotus_output_adapter import LotusOutputAdapter
 
 adapters: List[OutputAdapter] = [
-    JSONDownloadOutputAdapter(),
+    CSVDownloadOutputAdapter(),
     LotusOutputAdapter(),
 ]
 

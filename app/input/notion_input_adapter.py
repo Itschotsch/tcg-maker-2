@@ -1,83 +1,54 @@
-from notion_client import Client
 import os
+import logging
+import pandas as pd
+
+from notion2pandas import Notion2PandasClient
 
 from input.input_adapter import InputAdapter
 
 class NotionInputAdapter(InputAdapter):
     name: str = "Notion"
     database_id: str
-    notion: Client
 
     def __init__(self, database_id: str):
+        """
+        Create the adapter, storing the Notion database ID.
+        """
         self.database_id = database_id
 
     def get_identifier(self) -> str:
-        return self.name + "_" + self.database_id
+        return f"{self.name}_{self.database_id}"
 
-    def read(self) -> dict:
+    def read(self) -> pd.DataFrame:
+        """
+        Read all rows from the Notion database into a pandas DataFrame using
+        notion2pandas, automatically handling pagination and parsing.
+        """
+        log = logging.getLogger(__name__)
+
+        # Ensure the token is present
         token = os.getenv("NOTION_TOKEN")
         if not token:
             raise ValueError("NOTION_TOKEN environment variable is not set")
-        self.notion = Client(auth=token)
-        print(self.notion.users.me())
-        
-        database = self.notion.databases.retrieve(
-            **{
-                "database_id": self.database_id,
-            }
-        )
-        print(database)
 
-        data_source_id = database["data_sources"][0]["id"]
-        print(data_source_id)
+        log.info(f"Reading from Notion database with ID: {self.database_id}")
 
-        database = self.notion.data_sources.query(
-            **{
-                "data_source_id": data_source_id,
-            }
-        )
-        print(database)
+        # Initialise the notion2pandas client
+        client: Notion2PandasClient
+        try:
+            client = Notion2PandasClient(auth=token)
+            log.info("Successfully created Notion2PandasClient")
+        except Exception as e:
+            log.error(f"Failed to initialize Notion2PandasClient: {e}")
+            raise
 
-        return {"data": database}
+        # Fetch the data as a DataFrame
+        try:
+            log.debug("Fetching data from Notion...")
+            df: pd.DataFrame = client.from_notion_DB_to_dataframe(self.database_id)
+            log.info(f"Successfully loaded {len(df)} rows from Notion")
+        except Exception as e:
+            log.error(f"Error while fetching Notion DB to DataFrame: {e}")
+            raise
 
-def notion_property_to_value(prop: dict):
-    prop_type = prop["type"]
-
-    if prop_type == "title":
-        return "".join(t["plain_text"] for t in prop["title"])
-
-    if prop_type == "rich_text":
-        return "".join(t["plain_text"] for t in prop["rich_text"])
-
-    if prop_type == "number":
-        return prop["number"]
-
-    if prop_type == "select":
-        return prop["select"]["name"] if prop["select"] else None
-
-    if prop_type == "multi_select":
-        return [v["name"] for v in prop["multi_select"]]
-
-    if prop_type == "checkbox":
-        return prop["checkbox"]
-
-    if prop_type == "date":
-        return prop["date"]["start"] if prop["date"] else None
-
-    if prop_type == "relation":
-        return [r["id"] for r in prop["relation"]]
-
-    if prop_type == "url":
-        return prop["url"]
-
-    if prop_type == "email":
-        return prop["email"]
-
-    if prop_type == "phone_number":
-        return prop["phone_number"]
-
-    if prop_type == "people":
-        return [p.get("name") for p in prop["people"]]
-
-    # fallback (files, rollups, formulas, etc.)
-    return None
+        return df

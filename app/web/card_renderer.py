@@ -1,8 +1,9 @@
 from datetime import datetime
 from fastapi import APIRouter, Request, Response
+import pandas as pd
+
 from input import input_manager
 from output import output_manager
-
 from web import web_server
 
 router = APIRouter()
@@ -42,7 +43,7 @@ async def render_cards(request: Request):
         return {"error": f"Output adapter '{output_adapter_name}' not found."}
 
     # Read data using the input adapter
-    data = input_adapter.read()
+    data: pd.DataFrame = input_adapter.read()
 
     # Render cards using the output adapter
     response: Response = output_adapter.write(

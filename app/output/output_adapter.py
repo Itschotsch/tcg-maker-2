@@ -1,3 +1,5 @@
+import pandas as pd
+
 from httpcore import Request, Response
 
 class OutputAdapter:
@@ -6,5 +8,5 @@ class OutputAdapter:
     def __init__(self) -> None:
         pass
 
-    def write(self, request: Request, data: dict) -> Response:
+    def write(self, request: Request, data: pd.DataFrame) -> Response:
         raise NotImplementedError("OutputAdapter subclasses must implement the write method.")

@@ -1,5 +1,5 @@
 from datetime import datetime
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Response
 from input import input_manager
 from output import output_manager
 
@@ -45,9 +45,12 @@ async def render_cards(request: Request):
     data = input_adapter.read()
 
     # Render cards using the output adapter
-    rendered_output = output_adapter.write(data)
+    response: Response = output_adapter.write(
+        request=request,
+        data=data
+    )
 
-    return {"output": rendered_output}
+    return response
 
 def render(data: dict) -> dict:
     # Placeholder render function

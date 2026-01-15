@@ -11,5 +11,7 @@ class LotusOutputAdapter(OutputAdapter):
 
     def write(self, request: Request, data: pd.DataFrame) -> Response:
         print(f"Writing to Lotus: {data}")
-        response = Response()
+        response = Response(
+            status=200,
+        )
         return response

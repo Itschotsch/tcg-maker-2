@@ -1,15 +1,18 @@
 from argparse import ArgumentParser
 from dotenv import load_dotenv
+
 import logging
 import os
+
+load_dotenv()
+log_level = os.getenv("LOG_LEVEL", "INFO").upper()
+logging.basicConfig(level=log_level)
+log = logging.getLogger(__name__)
+log.info(f"Log level set to: {log_level}")
 
 from web import web_server
 
 def main():
-    load_dotenv()
-    log_level = os.getenv("LOG_LEVEL", "INFO").upper()
-    logging.basicConfig(level=log_level)
-    log = logging.getLogger(__name__)
 
     parser = ArgumentParser()
     parser.add_argument("--port", type=int, help="Port to run the web server on")

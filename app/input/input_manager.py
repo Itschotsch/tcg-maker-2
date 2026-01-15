@@ -9,9 +9,11 @@ log: logging.Logger = logging.getLogger(__name__)
 
 adapters: List[InputAdapter] = []
 
+log.info("Adding NotionInputAdapters...")
 for id in eval(os.getenv("NOTION_DATABASE_IDS", "[]")):
-    log.info(f"Adding NotionInputAdapter with database_id: {id}")
+    log.info(f"Adding NotionInputAdapter with database_id: {id}...")
     adapters.append(NotionInputAdapter(database_id=id))
+    log.info(f"Added NotionInputAdapter with database_id: {id}.")
 
 def get_adapter_by_name(name: str) -> InputAdapter:
     for adapter in adapters:

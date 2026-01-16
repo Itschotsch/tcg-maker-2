@@ -3,10 +3,12 @@ from typing import List
 from output.output_adapter import OutputAdapter
 from output.csv_download_output_adapter import CSVDownloadOutputAdapter
 from output.lotus_output_adapter import LotusOutputAdapter
+from output.zip_download_output_adapter import ZIPDownloadOutputAdapter
 
 adapters: List[OutputAdapter] = [
     CSVDownloadOutputAdapter(),
     LotusOutputAdapter(),
+    ZIPDownloadOutputAdapter(),
 ]
 
 def get_adapter_by_name(name: str) -> OutputAdapter:

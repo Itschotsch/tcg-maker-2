@@ -215,5 +215,7 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# Input
+# Input, Process, Output
 /input
+/process
+/output

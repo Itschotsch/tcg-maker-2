@@ -10,8 +10,8 @@ class CSVDownloadOutputAdapter(OutputAdapter):
     def __init__(self) -> None:
         pass
 
-    def write(self, request: Request, process_dir: str) -> Response:
-        print(f"Writing to CSV Download: {id}")
+    def write(self, process_dir: str) -> Response:
+        print(f"Writing to CSV Download: {process_dir}")
 
         # Read the data from the process directory
         data = pd.read_csv(os.path.join(process_dir, "data.csv"))

@@ -60,7 +60,6 @@ async def render_cards(request: Request):
 
     # Render cards using the output adapter
     response: Response = output_adapter.write(
-        request=request,
         process_dir=process_dir,
     )
 

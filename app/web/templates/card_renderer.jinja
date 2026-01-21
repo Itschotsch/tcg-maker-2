@@ -1,62 +1,62 @@
 {% extends "scaffold.jinja" %}
 
 {% block content %}
-<h1 class="title">Card Renderer</h1>
-<form action="/card_renderer" method="post">
+  <h1 class="title">Card Renderer</h1>
+  <form action="/card_renderer" method="post">
     <fieldset class="field is-grouped">
-        <div>
-            <label class="label">Input Adapter</label>
-            <div class="control">
-                <div class="select">
-                    <select name="input_adapter">
-                        {% for input_adapter in input_adapters %}
-                        <option value="{{ input_adapter.name }}">{{ input_adapter.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
+      <div>
+        <label class="label">Input Adapter</label>
+        <div class="control">
+          <div class="select">
+            <select name="input_adapter">
+              {% for input_adapter in input_adapters %}
+                <option value="{{ input_adapter.get_display_name() }}">{{ input_adapter.get_display_name() }}</option>
+              {% endfor %}
+            </select>
+          </div>
         </div>
-        <div>
-            <label class="label">Process Adapter</label>
-            <div class="control">
-                <div class="select">
-                    <select name="process_adapter">
-                        {% for process_adapter in process_adapters %}
-                        <option value="{{ process_adapter.name }}">{{ process_adapter.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
+      </div>
+      <div>
+        <label class="label">Process Adapter</label>
+        <div class="control">
+          <div class="select">
+            <select name="process_adapter">
+              {% for process_adapter in process_adapters %}
+                <option value="{{ process_adapter.get_display_name() }}">{{ process_adapter.get_display_name() }}</option>
+              {% endfor %}
+            </select>
+          </div>
         </div>
-        {# <div>
+      </div>
+      {# <div>
             <label class="label">Card Template</label>
             <div class="control">
                 <div class="select">
                     <select name="card_template">
                         {% for card_template in card_templates %}
-                        <option value="{{ card_template.name }}">{{ card_template.name }}</option>
+                        <option value="{{ card_template.get_display_name() }}">{{ card_template.get_display_name() }}</option>
                         {% endfor %}
                     </select>
                 </div>
             </div>
         </div> #}
-        <div>
-            <label class="label">Output Adapter</label>
-            <div class="control">
-                <div class="select">
-                    <select name="output_adapter">
-                        {% for output_adapter in output_adapters %}
-                        <option value="{{ output_adapter.name }}">{{ output_adapter.name }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
+      <div>
+        <label class="label">Output Adapter</label>
+        <div class="control">
+          <div class="select">
+            <select name="output_adapter">
+              {% for output_adapter in output_adapters %}
+                <option value="{{ output_adapter.get_display_name() }}">{{ output_adapter.get_display_name() }}</option>
+              {% endfor %}
+            </select>
+          </div>
         </div>
+      </div>
     </fieldset>
     <fieldset class="field">
-        <div class="control">
-            <button class="button is-primary" type="submit">Submit</button>
-        </div>
+      <div class="control">
+        <button class="button is-primary" type="submit">Submit</button>
+      </div>
     </fieldset>
-</form>
+  </form>
 {% endblock %}

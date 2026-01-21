@@ -53,14 +53,67 @@ async def render_cards(request: Request):
         return {"error": f"Process adapter '{process_adapter_name}' not found."}
 
     # Read data using the input adapter
-    data: pd.DataFrame = input_adapter.read()
+    print(f"Reading data from {input_adapter} / {input_adapter.get_display_name()}...")
+    data: pd.DataFrame = await input_adapter.read()
+
+    # Prepare configuration
+    _bleed_mm: float = 3
+    _dpi: int = 300
+    _dpmm: float = _dpi / 25.426829268
+    _card_width_no_bleed_mm: float = 63.5
+    _card_height_no_bleed_mm: float = 88.9
+    _card_border_radius_mm: float = 3
+
+    configuration: dict = {
+        "card": {
+            "bleed": {
+                "mm": _bleed_mm,
+                "px": round(_bleed_mm * _dpmm),
+            },
+            "dpi": {
+                "in": _dpi,
+                "mm": _dpmm,
+            },
+            "width": {
+                "no_bleed": {
+                    "mm": _card_width_no_bleed_mm,
+                    "px": round(_card_width_no_bleed_mm * _dpmm),
+                },
+                "bleed": {
+                    "mm": _card_width_no_bleed_mm + _bleed_mm * 2,
+                    "px": round((_card_width_no_bleed_mm + _bleed_mm * 2) * _dpmm),
+                },
+            },
+            "height": {
+                "no_bleed": {
+                    "mm": _card_height_no_bleed_mm,
+                    "px": round(_card_height_no_bleed_mm * _dpmm),
+                },
+                "bleed": {
+                    "mm": _card_height_no_bleed_mm + _bleed_mm * 2,
+                    "px": round((_card_height_no_bleed_mm + _bleed_mm * 2) * _dpmm),
+                },
+            },
+            "border_radius": {
+                "mm": _card_border_radius_mm,
+                "px": round(_card_border_radius_mm * _dpmm),
+            },
+        },
+    }
+
+    # DEBUG: Only render few cards
+    data = data[data["ID"].isin(range(509, 512 + 1))]
 
     # Process data using the process adapter
-    process_dir: str = process_adapter.process(data)
+    process_dir: str = await process_adapter.process(
+        data=data,
+        configuration=configuration
+    )
 
     # Render cards using the output adapter
-    response: Response = output_adapter.write(
+    response: Response = await output_adapter.write(
         process_dir=process_dir,
+        configuration=configuration,
     )
 
     return response

@@ -1,0 +1,11 @@
+# Use the local Dockerfile
+services:
+  tcgmaker2:
+    container_name: tcgmaker2
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app

@@ -6,5 +6,8 @@ class ProcessAdapter:
     def __init__(self) -> None:
         pass
 
-    def process(self, data: pd.DataFrame) -> str:
+    def get_display_name(self) -> str:
+        raise NotImplementedError("ProcessAdapter subclasses must implement the get_display_name method.")
+
+    async def process(self, data: pd.DataFrame, configuration: dict) -> str:
         raise NotImplementedError("ProcessAdapter subclasses must implement the process method.")

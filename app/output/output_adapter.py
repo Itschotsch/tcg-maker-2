@@ -8,5 +8,8 @@ class OutputAdapter:
     def __init__(self) -> None:
         pass
 
-    def write(self, process_dir: str) -> Response:
+    def get_display_name(self) -> str:
+        raise NotImplementedError("OutputAdapter subclasses must implement the get_display_name method.")
+
+    async def write(self, process_dir: str, configuration: dict) -> Response:
         raise NotImplementedError("OutputAdapter subclasses must implement the write method.")

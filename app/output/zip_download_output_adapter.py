@@ -6,12 +6,14 @@ import shutil
 from output.output_adapter import OutputAdapter
 
 class ZIPDownloadOutputAdapter(OutputAdapter):
-    name: str = "ZIP Download"
 
     def __init__(self) -> None:
         pass
 
-    def write(self, process_dir: str) -> Response:
+    def get_display_name(self) -> str:
+        return f"ZIP Download"
+
+    async def write(self, process_dir: str, configuration: dict) -> Response:
         print(f"Writing to ZIP: {process_dir}")
 
         zip_buffer = zip(process_dir)

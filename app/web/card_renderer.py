@@ -102,7 +102,7 @@ async def render_cards(request: Request):
     }
 
     # DEBUG: Only render few cards
-    data = data[data["ID"].isin(range(509, 512 + 1))]
+    # data = data[data["ID"].isin(range(509, 512 + 1))]
 
     # Process data using the process adapter
     process_dir: str = await process_adapter.process(

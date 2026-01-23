@@ -17,16 +17,14 @@ class LotusOutputAdapter(OutputAdapter):
     async def write(self, process_dir: str, configuration: dict) -> Response:
         print(f"Writing to Lotus: {process_dir}")
 
-        return Response(status_code=200)
+        # Get the content of the zip file
+        zip_buffer = zip(process_dir)
 
-        # # Get the content of the zip file
-        # zip_buffer = zip(process_dir)
+        response = Response(
+            content=zip_buffer.getvalue(),
+            media_type="application/zip",
+            headers={"Content-Disposition": "attachment; filename=lotus_output.zip"}
+        )
+        zip_buffer.close()
 
-        # response = Response(
-        #     content=zip_buffer.getvalue(),
-        #     media_type="application/zip",
-        #     headers={"Content-Disposition": "attachment; filename=lotus_output.zip"}
-        # )
-        # zip_buffer.close()
-
-        # return response
+        return response

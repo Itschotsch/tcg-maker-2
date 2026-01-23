@@ -2,7 +2,7 @@
 
 {% block content %}
   <h1 class="title">Card Renderer</h1>
-  <form action="/card_renderer" method="post">
+  <form id="renderer-form" action="/card_renderer" method="post">
     <fieldset class="field is-grouped">
       <div>
         <label class="label">Input Adapter</label>
@@ -28,18 +28,6 @@
           </div>
         </div>
       </div>
-      {# <div>
-            <label class="label">Card Template</label>
-            <div class="control">
-                <div class="select">
-                    <select name="card_template">
-                        {% for card_template in card_templates %}
-                        <option value="{{ card_template.get_display_name() }}">{{ card_template.get_display_name() }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-        </div> #}
       <div>
         <label class="label">Output Adapter</label>
         <div class="control">
@@ -55,8 +43,81 @@
     </fieldset>
     <fieldset class="field">
       <div class="control">
-        <button class="button is-primary" type="submit">Submit</button>
+        <button id="submit-btn" class="button is-primary" type="submit">Submit</button>
       </div>
+      <p id="error-message" class="help is-danger" style="display: none;"></p>
     </fieldset>
   </form>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+  <script>
+      document.getElementById('renderer-form').addEventListener('submit', function(e) {
+          e.preventDefault(); // Stop the browser from navigating away
+
+          const form = this;
+          const btn = document.getElementById('submit-btn');
+          const errorMsg = document.getElementById('error-message');
+
+          // 1. UI Feedback: Set loading state and clear errors
+          btn.classList.add('is-loading');
+          btn.disabled = true;
+          errorMsg.style.display = 'none';
+          errorMsg.innerText = '';
+
+          // 2. Prepare Data
+          const formData = new FormData(form);
+
+          // 3. Make the Request
+          axios.post('/card_renderer', formData, {
+                  responseType: 'blob', // IMPORTANT: Tells Axios to handle binary data
+                  timeout: 600000 // Timeout in ms (e.g., 600000 = 10 minutes)
+              })
+              .then(function(response) {
+                  // 4. Handle Success: Trigger Download
+
+                  // Create a URL for the blob
+                  const url = window.URL.createObjectURL(new Blob([response.data]));
+                  const link = document.createElement('a');
+                  link.href = url;
+
+                  // Try to get filename from headers, otherwise default
+                  const contentDisposition = response.headers['content-disposition'];
+                  let fileName = 'data.zip';
+                  if (contentDisposition) {
+                      const fileNameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+                      if (fileNameMatch && fileNameMatch.length === 2)
+                          fileName = fileNameMatch[1];
+                  }
+
+                  link.setAttribute('download', fileName);
+                  document.body.appendChild(link);
+                  link.click();
+
+                  // Cleanup
+                  link.remove();
+                  window.URL.revokeObjectURL(url);
+              })
+              .catch(function(error) {
+                  // 5. Handle Errors
+                  console.error(error);
+                  errorMsg.style.display = 'block';
+
+                  if (error.code === 'ECONNABORTED') {
+                      errorMsg.innerText = 'The request timed out. The server is taking too long to respond.';
+                  } else if (error.response) {
+                      // Server responded with a status other than 2xx
+                      // Note: Since responseType is blob, we might need to read the blob text to see the error message
+                      errorMsg.innerText = `Error: ${error.response.statusText}`;
+                  } else {
+                      errorMsg.innerText = 'An unexpected error occurred.';
+                  }
+              })
+              .finally(function() {
+                  // 6. Reset UI State
+                  btn.classList.remove('is-loading');
+                  btn.disabled = false;
+              });
+      });
+  </script>
 {% endblock %}

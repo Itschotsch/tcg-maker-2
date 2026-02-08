@@ -1,7 +1,6 @@
 import re
 
 def clean_html_text(text: str | None) -> str | None:
-    print("CLEANING: ", text)
     if text is None:
         return None
 
@@ -17,6 +16,5 @@ def clean_html_text(text: str | None) -> str | None:
         r"<\1></\1>", 
         cleaned_text
     )
-    print(f"Cleaned text: {cleaned_text}")
 
     return cleaned_text

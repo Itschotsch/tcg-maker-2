@@ -81,7 +81,7 @@ class AnorProcessAdapter(ProcessAdapter):
                                 "primary": get_or_none(row, "title_primary"),
                                 "secondary": get_or_none(row, "title_secondary"),
                             },
-                            "description": get_or_none(row, "description"),
+                            "description": html_util.clean_html_text(get_or_none(row, "description")),
                             "artwork": {
                                 "path": f"{repositories_path}/anor/artworks/{get_or_none(row, "ID")}.png",
                             },

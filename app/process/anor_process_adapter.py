@@ -8,7 +8,7 @@ from util import git_util
 import uuid
 
 from process.process_adapter import ProcessAdapter
-from util import dict_util
+from util import dict_util, html_util
 
 class AnorProcessAdapter(ProcessAdapter):
 
@@ -24,10 +24,7 @@ class AnorProcessAdapter(ProcessAdapter):
         """
         print(f"Writing to Anor: {data}")
 
-        id: uuid = uuid.uuid4()
-        print(f"UUID: {id}")
-
-        process_dir = os.path.join(os.getcwd(), "process", "anor", str(id))
+        process_dir: str = configuration["meta"]["process_path"]
         print(f"Process directory: {process_dir}")
 
         os.makedirs(os.path.join(process_dir, "csv"), exist_ok=True)
@@ -71,7 +68,8 @@ class AnorProcessAdapter(ProcessAdapter):
                     {
                         "release": {
                             "label": {
-                                "display": "α",
+                                # "display": "α",
+                                "display": "GEN1",
                             },
                         },
                         "entity": {
@@ -111,6 +109,7 @@ class AnorProcessAdapter(ProcessAdapter):
                                 },
                                 "barriers": get_or_none(row, "stats_barriers"),
                             },
+                            "rarity": get_or_none(row, "rarity"),
                         },
                     },
                 )

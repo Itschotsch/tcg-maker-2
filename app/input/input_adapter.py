@@ -6,5 +6,5 @@ class InputAdapter:
     def get_display_name(self) -> str:
         raise NotImplementedError("InputAdapter subclasses must implement the get_display_name method.")
 
-    async def read(self, source: str) -> dict:
+    async def read(self, configuration: dict) -> dict:
         raise NotImplementedError("InputAdapter subclasses must implement the read method.")

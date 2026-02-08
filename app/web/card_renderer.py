@@ -1,6 +1,8 @@
 from datetime import datetime
 from fastapi import APIRouter, Request, Response
+import os
 import pandas as pd
+import uuid
 
 from input import input_manager
 from output import output_manager
@@ -52,11 +54,8 @@ async def render_cards(request: Request):
     except ValueError:
         return {"error": f"Process adapter '{process_adapter_name}' not found."}
 
-    # Read data using the input adapter
-    print(f"Reading data from {input_adapter} / {input_adapter.get_display_name()}...")
-    data: pd.DataFrame = await input_adapter.read()
-
     # Prepare configuration
+    _task_id = str(uuid.uuid4())
     _bleed_mm: float = 3
     _dpi: int = 300
     _dpmm: float = _dpi / 25.426829268
@@ -65,6 +64,12 @@ async def render_cards(request: Request):
     _card_border_radius_mm: float = 3
 
     configuration: dict = {
+        "meta": {
+            "task_id": _task_id,
+            "input_path": os.path.join(os.getcwd(), "input"),
+            "process_path": os.path.join(os.getcwd(), "process", _task_id),
+            "output_path": os.path.join(os.getcwd(), "output"),
+        },
         "card": {
             "bleed": {
                 "mm": _bleed_mm,
@@ -100,6 +105,12 @@ async def render_cards(request: Request):
             },
         },
     }
+
+    # Read data using the input adapter
+    print(f"Reading data from {input_adapter} / {input_adapter.get_display_name()}...")
+    data: pd.DataFrame = await input_adapter.read(
+        configuration=configuration
+    )
 
     # DEBUG: Only render few cards
     # data = data[data["ID"].isin(range(509, 512 + 1))]

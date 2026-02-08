@@ -20,7 +20,7 @@ class CSVInputAdapter(InputAdapter):
         else:
             return f"CSV Import"
 
-    async def read(self, sanitise = True) -> pd.DataFrame:
+    async def read(self, configuration: dict, sanitise = True) -> pd.DataFrame:
         # From /import (next to /app), read the CSV.
         # If a file called self.file_name exists, choose it.
         # Else, if only one CSV file exists, choose it, no matter the name.

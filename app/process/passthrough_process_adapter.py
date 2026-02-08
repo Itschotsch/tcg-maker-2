@@ -22,7 +22,7 @@ class PassthroughProcessAdapter(ProcessAdapter):
         id: uuid = uuid.uuid4()
         print(f"UUID: {id}")
 
-        process_dir = os.path.join(os.getcwd(), "process", "anor", str(id))
+        process_dir: str = configuration["meta"]["process_path"]
         print(f"Process directory: {process_dir}")
 
         os.makedirs(os.path.join(process_dir, "csv"), exist_ok=True)

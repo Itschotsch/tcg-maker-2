@@ -24,7 +24,7 @@ class NotionInputAdapter(InputAdapter):
     def get_display_name(self) -> str:
         return f"Notion Import"
 
-    async def read(self) -> pd.DataFrame:
+    async def read(self, configuration: dict) -> pd.DataFrame:
         """
         Read all rows from the Notion database into a pandas DataFrame.
         Resolves Relation IDs to Titles only for specific columns to save API calls.
@@ -111,6 +111,19 @@ class NotionInputAdapter(InputAdapter):
             log.error(f"Error fetching Notion DB: {e}")
             raise
 
+        # Save raw file
+        # Create the output directory if it doesn't exist
+        process_dir: str = configuration["meta"]["process_path"]
+        output_dir = os.path.join(process_dir, "csv")
+        os.makedirs(output_dir, exist_ok=True)
+
+        # Define the path for the raw CSV file
+        raw_csv_path = os.path.join(output_dir, f"data_raw_notion_db_{self.database_id}.csv")
+
+        # Save the raw DataFrame to a CSV file
+        df.to_csv(raw_csv_path, index=False)
+        log.info(f"Raw Notion data saved to {raw_csv_path}")
+
         return sanitise_notion_dataframe(df)
 
 def sanitise_notion_dataframe(df: pd.DataFrame) -> pd.DataFrame:
@@ -136,6 +149,8 @@ def sanitise_notion_dataframe(df: pd.DataFrame) -> pd.DataFrame:
         "⚔️",
         "🛡️",
         "⭕️",
+        "Rarität",
+        "Set-Release",
     ]]
 
     # ID
@@ -196,6 +211,12 @@ def sanitise_notion_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     # Stats Barriers
     df["stats_barriers"] = df["⭕️"].replace("-", None)
     df = df.drop(columns=["⭕️"])
+
+    # Rarity
+    df = df.rename(columns={"Rarität": "rarity"})
+
+    # Set Release
+    df = df.rename(columns={"Set-Release": "set_release"})
 
     print("Sanitised dataframe.")
 

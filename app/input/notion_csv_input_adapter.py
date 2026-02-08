@@ -17,6 +17,6 @@ class NotionCSVInputAdapter(CSVInputAdapter):
         else:
             return f"Notion CSV Import"
 
-    async def read(self) -> pd.DataFrame:
-        df: pd.DataFrame = await super().read(sanitise=False)
+    async def read(self, configuration: dict) -> pd.DataFrame:
+        df: pd.DataFrame = await super().read(configuration, sanitise=False)
         return sanitise_dataframe(sanitise_notion_dataframe(df))

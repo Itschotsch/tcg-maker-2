@@ -5,7 +5,7 @@
 # This way, the application can be updated without rebuilding the container.
 
 # Use the official Python image
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 # Set the working directory
 RUN mkdir /app
@@ -17,6 +17,9 @@ EXPOSE 8000
 # Mount the application as a volume
 VOLUME /app
 
+# Install system dependencies
+RUN apt-get update && apt-get install -y git
+
 # Install the required dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
@@ -26,4 +29,4 @@ RUN python -m playwright install
 RUN python -m playwright install-deps
 
 # Set the entrypoint to run the application
-CMD ["python", "-u", "main.py", "--ip", "0.0.0.0", "--port", "8000"]
+CMD ["python", "-u", "app/main.py", "--host", "0.0.0.0", "--port", "8000", "--reload"]

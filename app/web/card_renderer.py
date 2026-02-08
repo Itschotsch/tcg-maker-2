@@ -32,6 +32,7 @@ async def render_cards(request: Request):
     input_adapter_name = form_data.get("input_adapter")
     output_adapter_name = form_data.get("output_adapter")
     process_adapter_name = form_data.get("process_adapter")
+    card_ids_str = form_data.get("card_ids")
 
     # Find the selected input adapter
     input_adapter: input_manager.InputAdapter
@@ -111,6 +112,13 @@ async def render_cards(request: Request):
     data: pd.DataFrame = await input_adapter.read(
         configuration=configuration
     )
+
+    if card_ids_str is not None and card_ids_str.strip() != "":
+        try:
+            card_ids = [int(id.strip()) for id in card_ids_str.split(',')]
+            data = data[data["ID"].isin(card_ids)]
+        except ValueError:
+            return {"error": "Invalid card IDs provided. Please enter a comma-separated list of integers."}
 
     # DEBUG: Only render few cards
     # data = data[data["ID"].isin(range(509, 512 + 1))]

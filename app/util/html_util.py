@@ -13,7 +13,7 @@ def clean_html_text(text: str | None) -> str | None:
     # The regex captures the tag name and checks for an optional '/'
     # It specifically targets the known tags: ignis, terra, aqua, aeris, magica, unshaped, opt
     cleaned_text = re.sub(
-        r"<(ignis|terra|aqua|aeris|magica|unshaped\d*|opt)(/?)>", 
+        r"<(ignis|terra|aqua|aeris|magica|unshaped[^/>]*|opt)(/?)>", 
         r"<\1></\1>", 
         cleaned_text
     )

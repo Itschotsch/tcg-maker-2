@@ -38,15 +38,14 @@ class LotusOutputAdapter(OutputAdapter):
 
         output_zip_dir = os.path.join(process_dir, "zip")
         os.makedirs(output_zip_dir, exist_ok=True)
-        grouped = data.groupby(["set_release", "rarity"])
+        grouped = data.groupby("rarity")
         all_zip_files = []
 
-        for (set_release, rarity), group in grouped:
+        for rarity, group in grouped:
             # Clean up set_release and rarity for filename
-            clean_set_release = str(set_release).lower().replace(" ", "_").replace("/", "_")
             clean_rarity = str(rarity).lower().replace(" ", "_").replace("/", "_")
 
-            zip_filename = f"{clean_set_release}_{clean_rarity}.zip"
+            zip_filename = f"{clean_rarity}.zip"
             zip_filepath = os.path.join(output_zip_dir, zip_filename)
 
             card_image_paths = []
@@ -65,7 +64,7 @@ class LotusOutputAdapter(OutputAdapter):
                 all_zip_files.append(zip_filepath)
                 print(f"Created {zip_filepath} with {len(card_image_paths)} images.")
             else:
-                print(f"No images found for set_release: {set_release}, rarity: {rarity}. Skipping zip creation.")
+                print(f"No images found for rarity: {rarity}. Skipping zip creation.")
 
         # Finally, zip all the created zip files into one main zip
         if all_zip_files:

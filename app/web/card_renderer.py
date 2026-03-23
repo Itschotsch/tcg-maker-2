@@ -14,6 +14,7 @@ router = APIRouter()
 @router.get("/card_renderer")
 async def main(request: Request):
     return web_server.templates.TemplateResponse(
+        request,
         "card_renderer.jinja",
         {
             "request": request,

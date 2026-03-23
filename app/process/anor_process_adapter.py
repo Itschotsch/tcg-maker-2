@@ -4,6 +4,7 @@ import os
 import pandas as pd
 from playwright.async_api import async_playwright
 from PIL import Image
+import shutil
 from util import git_util
 import uuid
 
@@ -33,7 +34,10 @@ class AnorProcessAdapter(ProcessAdapter):
         # Clone or pull the repository
         repositories_path = os.path.join(os.getcwd(), "repositories")
         os.makedirs(repositories_path, exist_ok=True)
-        git_util.clone_or_pull_repository("git@github.com:Itschotsch/anor.git", repositories_path)
+        repo_url = os.environ.get("ANOR_REPOSITORY_URL")
+        if not repo_url:
+            raise ValueError("ANOR_REPOSITORY_URL environment variable is not set")
+        repo_path: str | None = git_util.clone_or_pull_repository(repo_url, repositories_path)
 
         # Prepare data
         datas: list[dict] = self.prepare_datas(data, configuration, repositories_path)
@@ -45,8 +49,16 @@ class AnorProcessAdapter(ProcessAdapter):
         await self.render_images(process_dir, configuration)
 
         # Push the repository
-        # Disabled during development
-        # git_util.commit_and_push_repository("git@github.com:Itschotsch/anor.git", repositories_path)
+        if repo_path and configuration.get("meta", {}).get("commit_to_repo"):
+            png_source_dir = os.path.join(process_dir, "png")
+            if os.path.exists(png_source_dir):
+                png_dest_dir = os.path.join(repo_path, "export")
+                os.makedirs(png_dest_dir, exist_ok=True)
+                for file_name in os.listdir(png_source_dir):
+                    if file_name.endswith(".png"):
+                        shutil.copy2(os.path.join(png_source_dir, file_name), os.path.join(png_dest_dir, file_name))
+
+            git_util.commit_and_push_repository(repo_url, repo_path)
 
         return process_dir
 

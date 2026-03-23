@@ -1,5 +1,6 @@
 import git
 import os
+import subprocess
 from urllib.parse import urlparse
 
 def get_authenticated_url(url: str, token: str) -> str:
@@ -29,7 +30,13 @@ def get_authenticated_url(url: str, token: str) -> str:
     # 4. Rebuild as HTTPS with the token
     return f"https://{token}@{clean_url}"
 
-def clone_or_pull_repository(repo_url: str, directory: str):
+def clone_or_pull_repository(repo_url: str, directory: str) -> str | None:
+    # Set safe.directory to avoid permission errors. This will run inside the container.
+    try:
+        subprocess.run(["git", "config", "--global", "--add", "safe.directory", "*"], check=True)
+    except Exception as e:
+        print(f"Failed to set safe.directory: {e}")
+
     token = os.environ.get("GITHUB_ACCESS_TOKEN")
     if not token:
         raise ValueError("GITHUB_ACCESS_TOKEN environment variable is not set")
@@ -59,12 +66,21 @@ def clone_or_pull_repository(repo_url: str, directory: str):
             print(f"Cloning to {repo_path}...")
             os.makedirs(base_dir, exist_ok=True)
             repo = git.Repo.clone_from(auth_url, repo_path)
-            
+        return repo_path
     except git.exc.GitCommandError as e:
         print(f"Git Error (Check permissions/token): {e}")
-        return
+        return None
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
 
 def commit_and_push_repository(repo_url: str, directory: str):
+    # Set safe.directory to avoid permission errors. This will run inside the container.
+    try:
+        subprocess.run(["git", "config", "--global", "--add", "safe.directory", "*"], check=True)
+    except Exception as e:
+        print(f"Failed to set safe.directory: {e}")
+
     repo_name = os.path.basename(repo_url.rstrip("/")).replace(".git", "")
     base_dir = os.path.join(os.getcwd(), "repositories")
     repo_path = os.path.join(base_dir, repo_name)
@@ -85,5 +101,7 @@ def commit_and_push_repository(repo_url: str, directory: str):
             print("Push successful.")
         except git.exc.GitCommandError as e:
             print(f"Failed to push: {e}")
+        except Exception as e:
+            print(f"Error: {e}")
     else:
         print("No changes detected. Nothing to push.")

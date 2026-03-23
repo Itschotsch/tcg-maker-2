@@ -66,12 +66,6 @@ class AnorProcessAdapter(ProcessAdapter):
                 data: dict = dict_util.combine(
                     configuration,
                     {
-                        "release": {
-                            "label": {
-                                # "display": "α",
-                                "display": "GEN1",
-                            },
-                        },
                         "entity": {
                             "id": get_or_none(row, "ID"),
                             "layout": get_or_none(row, "kind"),

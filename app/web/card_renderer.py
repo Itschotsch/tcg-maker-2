@@ -34,6 +34,7 @@ async def render_cards(request: Request):
     output_adapter_name = form_data.get("output_adapter")
     process_adapter_name = form_data.get("process_adapter")
     card_ids_str = form_data.get("card_ids")
+    release_label = form_data.get("release_label")
 
     # Find the selected input adapter
     input_adapter: input_manager.InputAdapter
@@ -105,6 +106,11 @@ async def render_cards(request: Request):
                 "mm": _card_border_radius_mm,
                 "px": round(_card_border_radius_mm * _dpmm),
             },
+        },
+        "release": {
+            "label": {
+                "display": release_label if release_label else None
+            }
         },
     }
 

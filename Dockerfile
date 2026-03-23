@@ -14,9 +14,6 @@ WORKDIR /app
 # Expose the port
 EXPOSE 8000
 
-# Mount the application as a volume
-VOLUME /app
-
 # Install system dependencies
 RUN apt-get update && apt-get install -y git
 

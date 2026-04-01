@@ -61,6 +61,11 @@ def clone_or_pull_repository(repo_url: str, directory: str) -> str | None:
             origin = repo.remotes.origin
             # Optional: Update remote URL to ensure token is current
             origin.set_url(auth_url)
+
+            # Force clean up to prevent merge blocks
+            repo.git.reset("--hard")
+            repo.git.clean("-fd")
+
             origin.pull()
         else:
             print(f"Cloning to {repo_path}...")

@@ -80,7 +80,7 @@ class AnorProcessAdapter(ProcessAdapter):
                 internal_edition_label = configuration.get("meta", {}).get("internal_edition_label") or ""
                 self._generate_tcg_arena_json(repo_path, internal_edition_label, datas)
 
-            # git_util.commit_and_push_repository(repo_url, repo_path)
+            git_util.commit_and_push_repository(repo_url, repo_path)
 
         return process_dir
 

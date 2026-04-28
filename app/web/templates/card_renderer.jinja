@@ -53,6 +53,7 @@
             <input class="input" type="text" name="release_label" placeholder="α" value="α">
         </div>
     </fieldset>
+    <hr />
     <fieldset class="field">
         <div class="control">
             <label class="checkbox">
@@ -62,6 +63,23 @@
         </div>
     </fieldset>
     <fieldset class="field">
+        <label class="label">Repository Export Folder</label>
+        <div class="control">
+            <input id="repo-export-folder" class="input" type="text" name="repo_export_folder" placeholder="folder_name" value="dev">
+        </div>
+    </fieldset>
+    <script>
+        (function() {
+            const checkbox = document.querySelector('input[name="commit_to_repo"]');
+            const input = document.getElementById('repo-export-folder');
+            const updateState = function() {
+                input.disabled = !checkbox.checked;
+            };
+            checkbox.addEventListener('change', updateState);
+            updateState();
+        })();
+    </script>
+    <fieldset class="field mt-5">
       <div class="control">
         <button id="submit-btn" class="button is-primary" type="submit">Submit</button>
       </div>

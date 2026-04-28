@@ -53,8 +53,9 @@ class AnorProcessAdapter(ProcessAdapter):
         if repo_path and configuration.get("meta", {}).get("commit_to_repo"):
             png_source_dir: str = os.path.join(process_dir, "png")
             if os.path.exists(png_source_dir):
-                png_dest_dir: str = os.path.join(repo_path, "export", "png")
-                jpg_dest_dir: str = os.path.join(repo_path, "export", "jpg")
+                repo_export_folder = configuration.get("meta", {}).get("repo_export_folder") or ""
+                png_dest_dir: str = os.path.join(repo_path, "export", repo_export_folder, "png")
+                jpg_dest_dir: str = os.path.join(repo_path, "export", repo_export_folder, "jpg")
                 os.makedirs(png_dest_dir, exist_ok=True)
                 os.makedirs(jpg_dest_dir, exist_ok=True)
                 for file_name in os.listdir(png_source_dir):

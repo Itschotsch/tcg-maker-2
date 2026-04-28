@@ -36,7 +36,7 @@ async def render_cards(request: Request):
     card_ids_str = form_data.get("card_ids")
     release_label = form_data.get("release_label")
     commit_to_repo = form_data.get("commit_to_repo") == "true"
-    repo_export_folder = form_data.get("repo_export_folder")
+    internal_edition_label = form_data.get("internal_edition_label")
 
     # Find the selected input adapter
     input_adapter: input_manager.InputAdapter
@@ -75,7 +75,7 @@ async def render_cards(request: Request):
             "process_path": os.path.join(os.getcwd(), "process", _task_id),
             "output_path": os.path.join(os.getcwd(), "output"),
             "commit_to_repo": commit_to_repo,
-            "repo_export_folder": repo_export_folder,
+            "internal_edition_label": internal_edition_label,
         },
         "card": {
             "bleed": {

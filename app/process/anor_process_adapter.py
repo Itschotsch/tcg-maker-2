@@ -44,11 +44,13 @@ class AnorProcessAdapter(ProcessAdapter):
         # Prepare data
         datas: list[dict] = self.prepare_datas(data, configuration, repositories_path)
 
-        # Render templates
-        self.render_templates(process_dir, datas)
+        # Render templates and images
+        if configuration.get("meta", {}).get("render_cards", True):
+            # Render templates
+            self.render_templates(process_dir, datas)
 
-        # Render images
-        await self.render_images(process_dir, configuration)
+            # Render images
+            await self.render_images(process_dir, configuration)
 
         # Push the repository
         if repo_path and (configuration.get("meta", {}).get("commit_to_repo") or configuration.get("meta", {}).get("create_card_list")):

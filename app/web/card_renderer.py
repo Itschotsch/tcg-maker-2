@@ -37,6 +37,7 @@ async def render_cards(request: Request):
     release_label = form_data.get("release_label")
     commit_to_repo = form_data.get("commit_to_repo") == "true"
     create_card_list = form_data.get("create_card_list") == "true"
+    render_cards = form_data.get("render_cards") == "true"
     internal_edition_label = form_data.get("internal_edition_label")
     specify_card_ids = form_data.get("specify_card_ids") == "true"
 
@@ -78,6 +79,7 @@ async def render_cards(request: Request):
             "output_path": os.path.join(os.getcwd(), "output"),
             "commit_to_repo": commit_to_repo,
             "create_card_list": create_card_list,
+            "render_cards": render_cards,
             "internal_edition_label": internal_edition_label,
         },
         "card": {
@@ -133,6 +135,9 @@ async def render_cards(request: Request):
             data = data[data["ID"].isin(card_ids)]
         except ValueError:
             return {"error": "Invalid card IDs provided. Please enter a comma-separated list of integers."}
+    
+    # Sort by ID
+    data = data.sort_values(by="ID")
 
     # DEBUG: Only render few cards
     # data = data[data["ID"].isin(range(509, 512 + 1))]

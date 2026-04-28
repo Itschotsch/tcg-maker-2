@@ -168,7 +168,7 @@ def sanitise_notion_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     print("Type after:", df["type"].unique())
 
     # Title
-    df[["title_primary", "title_secondary"]] = df["Name"].str.split(",", n=1, expand=True)
+    df[["title_primary", "title_secondary"]] = df["Name"].str.split(",", n=1, expand=True).map(lambda x: x.strip() if pd.notna(x) else x)
     df = df.drop(columns=["Name"])
 
     # Description

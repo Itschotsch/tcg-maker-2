@@ -51,31 +51,32 @@ class AnorProcessAdapter(ProcessAdapter):
         await self.render_images(process_dir, configuration)
 
         # Push the repository
-        # This will copy the PNG files AND convert them to JPG files for the TCG Arena.
-        if repo_path and configuration.get("meta", {}).get("commit_to_repo"):
-            png_source_dir: str = os.path.join(process_dir, "png")
-            if os.path.exists(png_source_dir):
-                internal_edition_label = configuration.get("meta", {}).get("internal_edition_label") or ""
-                png_dest_dir: str = os.path.join(repo_path, "export", internal_edition_label, "png")
-                jpg_dest_dir: str = os.path.join(repo_path, "export", internal_edition_label, "jpg")
-                os.makedirs(png_dest_dir, exist_ok=True)
-                os.makedirs(jpg_dest_dir, exist_ok=True)
-                for file_name in os.listdir(png_source_dir):
-                    if file_name.endswith(".png"):
-                        png_source_path: str = os.path.join(png_source_dir, file_name)
-                        png_dest_path: str = os.path.join(png_dest_dir, file_name)
-                        shutil.copy2(png_source_path, png_dest_path)
+        if repo_path and (configuration.get("meta", {}).get("commit_to_repo") or configuration.get("meta", {}).get("create_card_list")):
+            if configuration.get("meta", {}).get("commit_to_repo"):
+                png_source_dir: str = os.path.join(process_dir, "png")
+                if os.path.exists(png_source_dir):
+                    internal_edition_label = configuration.get("meta", {}).get("internal_edition_label") or ""
+                    png_dest_dir: str = os.path.join(repo_path, "export", internal_edition_label, "png")
+                    jpg_dest_dir: str = os.path.join(repo_path, "export", internal_edition_label, "jpg")
+                    os.makedirs(png_dest_dir, exist_ok=True)
+                    os.makedirs(jpg_dest_dir, exist_ok=True)
+                    for file_name in os.listdir(png_source_dir):
+                        if file_name.endswith(".png"):
+                            png_source_path: str = os.path.join(png_source_dir, file_name)
+                            png_dest_path: str = os.path.join(png_dest_dir, file_name)
+                            shutil.copy2(png_source_path, png_dest_path)
 
-                        # remove ".png" at the end
-                        jpg_file_name: str = file_name.removesuffix(".png") + ".jpg"
-                        jpg_dest_path: str = os.path.join(jpg_dest_dir, jpg_file_name)
-                        with Image.open(png_source_path) as img:
-                            rgb_img = img.convert("RGB")
-                            rgb_img.save(jpg_dest_path, quality=100)
+                            # remove ".png" at the end
+                            jpg_file_name: str = file_name.removesuffix(".png") + ".jpg"
+                            jpg_dest_path: str = os.path.join(jpg_dest_dir, jpg_file_name)
+                            with Image.open(png_source_path) as img:
+                                rgb_img = img.convert("RGB")
+                                rgb_img.save(jpg_dest_path, quality=100)
 
             # Generate TCG Arena JSON
-            internal_edition_label = configuration.get("meta", {}).get("internal_edition_label") or ""
-            self._generate_tcg_arena_json(repo_path, internal_edition_label, datas)
+            if configuration.get("meta", {}).get("create_card_list"):
+                internal_edition_label = configuration.get("meta", {}).get("internal_edition_label") or ""
+                self._generate_tcg_arena_json(repo_path, internal_edition_label, datas)
 
             # git_util.commit_and_push_repository(repo_url, repo_path)
 
@@ -123,14 +124,14 @@ class AnorProcessAdapter(ProcessAdapter):
                 "id": card_id,
                 "name": name,
                 "Element": entity["elemental"]["element"],
-                "type": entity["type"],
+                "type": entity["kind"],
                 "cost": total_cost,
                 "face": {
                     "front": {
                         "name": name,
-                        "type": entity["type"],
+                        "type": entity["kind"],
                         "cost": total_cost,
-                        "image": f"https://itschotsch.github.io/tcg-maker/tcg-arena/images/{internal_edition_label}/{card_id}.jpg"
+                        "image": f"https://itschotsch.github.io/anor/export/{internal_edition_label}/jpg/{card_id}.jpg"
                     }
                 }
             }

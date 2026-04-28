@@ -42,11 +42,30 @@
       </div>
     </fieldset>
     <fieldset class="field">
-        <label class="label">Card IDs (comma-separated)</label>
         <div class="control">
-            <input class="input" type="text" name="card_ids" placeholder="1,2,3">
+            <label class="checkbox">
+                <input type="checkbox" name="specify_card_ids" value="true">
+                Specify card IDs (vs. all cards)
+            </label>
         </div>
     </fieldset>
+    <fieldset class="field">
+        <label class="label">Card IDs (comma-separated)</label>
+        <div class="control">
+            <input id="card-ids-input" class="input" type="text" name="card_ids" placeholder="1,2,3">
+        </div>
+    </fieldset>
+    <script>
+        (function() {
+            const checkbox = document.querySelector('input[name="specify_card_ids"]');
+            const cardIDsInput = document.getElementById('card-ids-input');
+            const updateSpecifyCardIDsState = function() {
+                cardIDsInput.disabled = !checkbox.checked;
+            };
+            checkbox.addEventListener('change', updateSpecifyCardIDsState);
+            updateSpecifyCardIDsState();
+        })();
+    </script>
     <fieldset class="field">
         <label class="label">Release Label</label>
         <div class="control">
@@ -65,18 +84,28 @@
     <fieldset class="field">
         <label class="label">Internal Edition Label</label>
         <div class="control">
-            <input id="repo-export-folder" class="input" type="text" name="internal_edition_label" placeholder="folder_name" value="dev">
+            <input id="internal_edition_label" class="input" type="text" name="internal_edition_label" placeholder="folder_name" value="dev">
+        </div>
+    </fieldset>
+    <fieldset class="field">
+        <div class="control">
+            <label class="checkbox">
+                <input type="checkbox" name="create_card_list" value="true" checked>
+                Create card list
+            </label>
         </div>
     </fieldset>
     <script>
         (function() {
-            const checkbox = document.querySelector('input[name="commit_to_repo"]');
-            const input = document.getElementById('repo-export-folder');
-            const updateState = function() {
-                input.disabled = !checkbox.checked;
+            const commitCheckbox = document.querySelector('input[name="commit_to_repo"]');
+            const internalEditionLabel = document.getElementById('internal_edition_label');
+            const cardListCheckbox = document.querySelector('input[name="create_card_list"]');
+            const updateRepoExportFolderState = function() {
+                internalEditionLabel.disabled = !commitCheckbox.checked;
+                cardListCheckbox.disabled = !commitCheckbox.checked;
             };
-            checkbox.addEventListener('change', updateState);
-            updateState();
+            commitCheckbox.addEventListener('change', updateRepoExportFolderState);
+            updateRepoExportFolderState();
         })();
     </script>
     <fieldset class="field mt-5">

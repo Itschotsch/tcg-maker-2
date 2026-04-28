@@ -36,7 +36,9 @@ async def render_cards(request: Request):
     card_ids_str = form_data.get("card_ids")
     release_label = form_data.get("release_label")
     commit_to_repo = form_data.get("commit_to_repo") == "true"
+    create_card_list = form_data.get("create_card_list") == "true"
     internal_edition_label = form_data.get("internal_edition_label")
+    specify_card_ids = form_data.get("specify_card_ids") == "true"
 
     # Find the selected input adapter
     input_adapter: input_manager.InputAdapter
@@ -75,6 +77,7 @@ async def render_cards(request: Request):
             "process_path": os.path.join(os.getcwd(), "process", _task_id),
             "output_path": os.path.join(os.getcwd(), "output"),
             "commit_to_repo": commit_to_repo,
+            "create_card_list": create_card_list,
             "internal_edition_label": internal_edition_label,
         },
         "card": {
@@ -124,7 +127,7 @@ async def render_cards(request: Request):
         configuration=configuration
     )
 
-    if card_ids_str is not None and card_ids_str.strip() != "":
+    if specify_card_ids and card_ids_str is not None and card_ids_str.strip() != "":
         try:
             card_ids = [int(id.strip()) for id in card_ids_str.split(',')]
             data = data[data["ID"].isin(card_ids)]

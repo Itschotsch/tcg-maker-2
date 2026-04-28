@@ -1,7 +1,9 @@
 import asyncio
-from jinja2 import Template
+import json
 import os
 import pandas as pd
+import re
+from jinja2 import Template
 from playwright.async_api import async_playwright
 from PIL import Image
 import shutil
@@ -71,9 +73,75 @@ class AnorProcessAdapter(ProcessAdapter):
                             rgb_img = img.convert("RGB")
                             rgb_img.save(jpg_dest_path, quality=100)
 
-            git_util.commit_and_push_repository(repo_url, repo_path)
+            # Generate TCG Arena JSON
+            internal_edition_label = configuration.get("meta", {}).get("internal_edition_label") or ""
+            self._generate_tcg_arena_json(repo_path, internal_edition_label, datas)
+
+            # git_util.commit_and_push_repository(repo_url, repo_path)
 
         return process_dir
+
+    def _parse_cost(self, cost: str | int | None) -> int:
+        if cost is None:
+            return 0
+        if isinstance(cost, int):
+            return cost
+        cost_str = str(cost).strip()
+        if not cost_str:
+            return 0
+        
+        total = 0
+        # Split by non-alphanumeric characters
+        tokens = re.split(r'[^a-zA-Z0-9]+', cost_str)
+        for token in tokens:
+            if token.isdigit():
+                total += int(token)
+        return total
+
+    def _generate_tcg_arena_json(self, repo_path: str, internal_edition_label: str, datas: list[dict]) -> None:
+        """
+        Generates the card-list JSON for the TCG Arena.
+        """
+        print(f"Generating TCG Arena JSON for {internal_edition_label}...")
+        
+        card_list = {}
+        for data in datas:
+            entity = data["entity"]
+            card_id = str(entity["id"])
+            
+            # Combine primary and secondary title
+            name = entity["title"]["primary"] or ""
+            if entity["title"]["secondary"]:
+                name += f", {entity['title']['secondary']}"
+            
+            # Calculate total cost
+            total_cost = 0
+            for cost_type in ["terra", "aqua", "aeris", "ignis", "magica", "unshaped"]:
+                total_cost += self._parse_cost(entity["cost"].get(cost_type))
+            
+            card_data = {
+                "id": card_id,
+                "name": name,
+                "Element": entity["elemental"]["element"],
+                "type": entity["type"],
+                "cost": total_cost,
+                "face": {
+                    "front": {
+                        "name": name,
+                        "type": entity["type"],
+                        "cost": total_cost,
+                        "image": f"https://itschotsch.github.io/tcg-maker/tcg-arena/images/{internal_edition_label}/{card_id}.jpg"
+                    }
+                }
+            }
+            card_list[card_id] = card_data
+            
+        output_path = os.path.join(repo_path, "tcg-arena", f"card-list-{internal_edition_label}.json")
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(card_list, f, indent=2, ensure_ascii=False)
+            
+        print(f"TCG Arena JSON generated at {output_path}")
 
     def prepare_datas(self, data: pd.DataFrame, configuration: dict, repositories_path: str) -> list[dict]:
         datas: list[dict] = []

@@ -152,6 +152,11 @@
               .then(function(response) {
                   // 4. Handle Success: Trigger Download
 
+                  // If status is 204 (No Content), just return
+                  if (response.status === 204 || !response.data || response.data.size === 0) {
+                      return;
+                  }
+
                   // Create a URL for the blob
                   const url = window.URL.createObjectURL(new Blob([response.data]));
                   const link = document.createElement('a');

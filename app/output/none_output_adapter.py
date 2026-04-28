@@ -13,4 +13,5 @@ class NoneOutputAdapter(OutputAdapter):
     async def write(self, process_dir: str, configuration: dict) -> Response:
         print(f"Doing nothing...")
 
-        return Response(content=None, media_type="text/plain")
+        # 204 No Content: 
+        return Response(status_code=204)

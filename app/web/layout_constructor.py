@@ -154,10 +154,17 @@ async def preview_card(request: Request):
         context["meta"]["fonts"] = {"path": os.path.join(anor_repo_path, "fonts")}
         context["meta"]["artworks"] = {"path": os.path.join(anor_repo_path, "artworks")}
         
-        # Default artwork if not specified
-        if "artwork" not in context.get("entity", {}):
-            if "entity" not in context: context["entity"] = {}
-            context["entity"]["artwork"] = {"path": os.path.join(anor_repo_path, "artworks", "1.png")}
+        # Resolve artwork path based on ID if not explicitly provided
+        if "entity" not in context: context["entity"] = {}
+        entity = context["entity"]
+        if "artwork" not in entity or not entity["artwork"].get("path"):
+            card_id = entity.get("id", "0")
+            artwork_path = os.path.join(anor_repo_path, "artworks", f"{card_id}.png")
+            # If the file doesn't exist, we might want to fall back to a placeholder or 0.png
+            if not os.path.exists(artwork_path):
+                artwork_path = os.path.join(anor_repo_path, "artworks", "0.png")
+            
+            context["entity"]["artwork"] = {"path": artwork_path}
 
         # Render Style
         style_template = Template(style_code)

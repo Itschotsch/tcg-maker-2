@@ -1,0 +1,290 @@
+{% extends "scaffold.jinja" %}
+
+{% block content %}
+<div class="columns is-gapless" style="height: calc(100vh - var(--bulma-navbar-height));;">
+    <!-- Left side: Editor -->
+    <div class="column is-6" style="border-right: 1px solid var(--bulma-border); display: flex; flex-direction: column;">
+        <div class="tabs is-boxed mb-0" id="editor-tabs">
+            <ul>
+                {% for filename in files.keys() %}
+                <li class="{% if loop.first %}is-active{% endif %}" data-filename="{{ filename }}">
+                    <a>
+                        <span>{{ filename }}</span>
+                        {% if filename.endswith('.jinja') and filename != 'style.jinja' %}
+                        <span class="tag is-success is-light ml-2 active-layout-tag" style="display: {% if filename == 'Charakter.jinja' %}inline-flex{% else %}none{% endif %};">Active</span>
+                        {% endif %}
+                    </a>
+                </li>
+                {% endfor %}
+                <li data-filename="data.json">
+                    <a>data.json</a>
+                </li>
+                <li data-tab="options">
+                    <a>Options</a>
+                </li>
+            </ul>
+        </div>
+        <div id="editor-container" style="flex-grow: 1;"></div>
+        <div id="options-container" class="p-5 has-background-dark has-text-white" style="flex-grow: 1; display: none;">
+            <h3 class="title is-4 has-text-white mb-4">Preview Options</h3>
+            <div class="field">
+                <label class="checkbox">
+                    <input type="checkbox" id="show-cut-line" checked class="mr-1">
+                    Show Cut Line (Bleed & Corners)
+                </label>
+                <p class="is-size-7 has-text-grey-light mt-2">
+                    The cut line indicates the safe area after removing the bleed.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right side: Preview -->
+    <div class="column is-6 has-background-light" style="display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: auto; padding: 20px;">
+        <div id="preview-container" style="position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2); background: white;">
+            <img id="preview-image" src="" alt="Card Preview" style="display: none; max-width: 100%; height: auto;">
+            <div id="loader" class="loader is-loading" style="width: 80px; height: 80px; border-width: 4px; display: none;"></div>
+            <div id="placeholder" class="has-text-grey">
+                <span class="icon is-large">
+                    <i class="fas fa-image fa-3x"></i>
+                </span>
+                <p>Enter Jinja code to see preview</p>
+            </div>
+        </div>
+        <div id="status-bar" class="mt-4 is-size-7 has-text-grey">
+            Last update: <span id="last-update">Never</span>
+        </div>
+    </div>
+</div>
+
+<!-- File Data -->
+{% for filename, content in files.items() %}
+<script id="file-content-{{ filename }}" type="text/plain">{{ content }}</script>
+{% endfor %}
+<script id="file-content-data-json" type="text/plain">{{ default_data }}</script>
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+<script>
+    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' } });
+
+    let editor;
+    let models = {};
+    let debounceTimer;
+    let activeFilename = "Charakter.jinja";
+    let activeLayoutFilename = "Charakter.jinja";
+
+    require(['vs/editor/editor.main'], function() {
+        // Initialize Sortable for tabs
+        const el = document.querySelector('#editor-tabs ul');
+        Sortable.create(el, {
+            animation: 150,
+            ghostClass: 'has-background-light'
+        });
+
+        // Initialize models
+        {% for filename in files.keys() %}
+        {
+            const content = document.getElementById('file-content-{{ filename }}').textContent;
+            const lang = "{{ filename }}".endsWith(".jinja") ? "html" : ("{{ filename }}".endsWith(".css") ? "css" : "html");
+            models["{{ filename }}"] = monaco.editor.createModel(content, lang);
+        }
+        {% endfor %}
+        
+        // Data.json model
+        const dataContent = document.getElementById('file-content-data-json').textContent;
+        models["data.json"] = monaco.editor.createModel(dataContent, "json");
+
+        // Create Editor
+        editor = monaco.editor.create(document.getElementById('editor-container'), {
+            model: models[activeFilename],
+            theme: 'vs-dark',
+            automaticLayout: true,
+            fontSize: 14,
+            minimap: { enabled: false }
+        });
+
+        // Set up change listeners for all models
+        Object.keys(models).forEach(filename => {
+            models[filename].onDidChangeContent(() => {
+                clearTimeout(debounceTimer);
+                
+                // Special handling for data.json to sync active layout
+                if (filename === "data.json") {
+                    try {
+                        const data = JSON.parse(models["data.json"].getValue());
+                        const newLayout = data.entity?.layout;
+                        if (newLayout && newLayout + ".jinja" !== activeLayoutFilename) {
+                            const newFilename = newLayout + ".jinja";
+                            if (models[newFilename]) {
+                                activeLayoutFilename = newFilename;
+                                updateActiveLayoutUI(newFilename);
+                            }
+                        }
+                    } catch (e) {
+                        // Ignore JSON parse errors while typing
+                    }
+                }
+
+                debounceTimer = setTimeout(updatePreview, 1000);
+            });
+        });
+
+        // Tab Switching and Active Layout Selection
+        document.querySelectorAll('#editor-tabs li').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const filename = tab.dataset.filename;
+                const isOptions = tab.dataset.tab === 'options';
+                
+                // UI: Active Tab
+                document.querySelectorAll('#editor-tabs li').forEach(t => t.classList.remove('is-active'));
+                tab.classList.add('is-active');
+
+                if (isOptions) {
+                    document.getElementById('editor-container').style.display = 'none';
+                    document.getElementById('options-container').style.display = 'block';
+                } else {
+                    document.getElementById('editor-container').style.display = 'block';
+                    document.getElementById('options-container').style.display = 'none';
+                    
+                    activeFilename = filename;
+                    editor.setModel(models[activeFilename]);
+
+                    // If it's a layout file, set it as active layout for rendering
+                    if (filename.endsWith('.jinja') && filename !== 'style.jinja') {
+                        activeLayoutFilename = filename;
+                        updateActiveLayoutUI(filename);
+                        
+                        // Also sync back to data.json if possible
+                        try {
+                            const dataModel = models["data.json"];
+                            const data = JSON.parse(dataModel.getValue());
+                            const layoutName = filename.replace('.jinja', '');
+                            if (data.entity && data.entity.layout !== layoutName) {
+                                data.entity.layout = layoutName;
+                                dataModel.setValue(JSON.stringify(data, null, 4));
+                            }
+                        } catch (err) {}
+                    }
+                }
+            });
+        });
+
+        // Options listeners
+        document.getElementById('show-cut-line').addEventListener('change', () => {
+            updatePreview();
+        });
+
+        function updateActiveLayoutUI(filename) {
+            document.querySelectorAll('.active-layout-tag').forEach(tag => {
+                tag.style.display = 'none';
+            });
+            const activeTab = document.querySelector(`#editor-tabs li[data-filename="${filename}"]`);
+            if (activeTab) {
+                const tag = activeTab.querySelector('.active-layout-tag');
+                if (tag) tag.style.display = 'inline-flex';
+            }
+        }
+
+        // Ctrl+S listener
+        editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, function() {
+            clearTimeout(debounceTimer);
+            updatePreview();
+        });
+
+        // Initial preview
+        updatePreview();
+    });
+
+    async function updatePreview() {
+        const previewImg = document.getElementById('preview-image');
+        const loader = document.getElementById('loader');
+        const placeholder = document.getElementById('placeholder');
+        const lastUpdate = document.getElementById('last-update');
+        const showCutLine = document.getElementById('show-cut-line').checked;
+
+        // Show loading state
+        loader.style.display = 'block';
+        placeholder.style.display = 'none';
+        previewImg.style.opacity = '0.5';
+
+        try {
+            // Collect all file contents
+            let filesPayload = {};
+            Object.keys(models).forEach(filename => {
+                filesPayload[filename] = models[filename].getValue();
+            });
+
+            const response = await fetch('/layout_constructor/preview', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    files: filesPayload,
+                    activeLayout: activeLayoutFilename,
+                    showCutLine: showCutLine
+                })
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                previewImg.src = url;
+                previewImg.style.display = 'block';
+                previewImg.style.opacity = '1';
+                lastUpdate.innerText = new Date().toLocaleTimeString();
+            } else {
+                const errorText = await response.text();
+                console.error("Preview error:", errorText);
+            }
+        } catch (error) {
+            console.error("Fetch error:", error);
+        } finally {
+            loader.style.display = 'none';
+        }
+    }
+</script>
+
+<style>
+    /* Full height adjustments */
+    body, html {
+        height: 100%;
+        overflow: hidden;
+    }
+    main {
+        height: 100%;
+    }
+    .section {
+        padding: 0 !important;
+        height: 100%;
+    }
+    .container {
+        max-width: 100% !important;
+        width: 100% !important;
+        height: 100%;
+    }
+    header, footer {
+        flex-shrink: 0;
+    }
+    .navbar {
+        border-bottom: 1px solid #ddd;
+    }
+    footer {
+        padding: 1rem 0 !important;
+        background: white;
+        border-top: 1px solid #ddd;
+    }
+
+    /* Loader center */
+    #loader {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-top: -40px;
+        margin-left: -40px;
+        z-index: 10;
+    }
+</style>
+{% endblock %}

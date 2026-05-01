@@ -5,7 +5,7 @@ import logging
 import os
 import uvicorn
 
-from web import card_renderer, main_page
+from web import card_renderer, main_page, layout_constructor
 
 log: logging.Logger = logging.getLogger(__name__)
 
@@ -25,6 +25,7 @@ log.debug(f"Templates directory set: {templates_dir}")
 
 app.include_router(card_renderer.router)
 app.include_router(main_page.router)
+app.include_router(layout_constructor.router)
 
 def run(
     host: str = "0.0.0.0",

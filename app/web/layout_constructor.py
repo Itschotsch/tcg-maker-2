@@ -8,7 +8,6 @@ import os
 from playwright.async_api import async_playwright
 import shutil
 import traceback
-import uuid
 
 from web import web_server
 
@@ -190,7 +189,7 @@ async def preview_card(request: Request):
                 html_content += cut_line_html
 
         # Render HTML to Image using Playwright
-        task_id = str(uuid.uuid4())
+        task_id = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         temp_dir = os.path.join(os.getcwd(), "process", "temp", task_id)
         os.makedirs(temp_dir, exist_ok=True)
         html_file = os.path.join(temp_dir, "preview.html")

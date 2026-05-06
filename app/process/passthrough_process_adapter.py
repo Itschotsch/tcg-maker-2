@@ -1,7 +1,5 @@
 import os
 import pandas as pd
-from util import git_util
-import uuid
 
 from process.process_adapter import ProcessAdapter
 
@@ -18,9 +16,6 @@ class PassthroughProcessAdapter(ProcessAdapter):
         Processes the given data and returns the path to the process directory.
         """
         print(f"Writing to Anor: {data}")
-
-        id: uuid = uuid.uuid4()
-        print(f"UUID: {id}")
 
         process_dir: str = configuration["meta"]["process_path"]
         print(f"Process directory: {process_dir}")

@@ -2,7 +2,6 @@ from datetime import datetime
 from fastapi import APIRouter, Request, Response
 import os
 import pandas as pd
-import uuid
 
 from input import input_manager
 from output import output_manager
@@ -64,7 +63,7 @@ async def render_cards(request: Request):
         return {"error": f"Process adapter '{process_adapter_name}' not found."}
 
     # Prepare configuration
-    _task_id = str(uuid.uuid4())
+    _task_id = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     _bleed_mm: float = 3
     _dpi: int = 300
     _dpmm: float = _dpi / 25.426829268

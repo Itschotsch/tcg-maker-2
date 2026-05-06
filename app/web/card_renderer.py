@@ -38,6 +38,7 @@ async def render_cards(request: Request):
     commit_to_repo = form_data.get("commit_to_repo") == "true"
     create_card_list = form_data.get("create_card_list") == "true"
     render_cards = form_data.get("render_cards") == "true"
+    cut_off_bleed = form_data.get("cut_off_bleed") == "true"
     internal_edition_label = form_data.get("internal_edition_label")
     specify_card_ids = form_data.get("specify_card_ids") == "true"
 
@@ -115,6 +116,7 @@ async def render_cards(request: Request):
                 "mm": _card_border_radius_mm,
                 "px": round(_card_border_radius_mm * _dpmm),
             },
+            "cut_off_bleed": cut_off_bleed,
         },
         "release": {
             "label": {

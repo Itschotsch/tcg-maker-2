@@ -1,4 +1,5 @@
 import asyncio
+import io
 import json
 import os
 import pandas as pd
@@ -8,7 +9,6 @@ from playwright.async_api import async_playwright
 from PIL import Image
 import shutil
 from util import git_util
-import uuid
 
 from process.process_adapter import ProcessAdapter
 from util import dict_util, html_util
@@ -333,7 +333,23 @@ class AnorProcessAdapter(ProcessAdapter):
                         await page.wait_for_load_state("networkidle")
                         
                         output_file = os.path.join(image_output_path, f"{name}.png")
-                        await page.screenshot(path=output_file)
+                        
+                        cut_off_bleed = configuration.get("card", {}).get("cut_off_bleed", False)
+                        if cut_off_bleed:
+                            bleed_px = configuration.get("card", {}).get("bleed", {}).get("px", 0)
+                            screenshot_bytes = await page.screenshot()
+                            with Image.open(io.BytesIO(screenshot_bytes)) as img:
+                                width, height = img.size
+                                # Crop bleed from all sides
+                                left = bleed_px
+                                top = bleed_px
+                                right = width - bleed_px
+                                bottom = height - bleed_px
+                                
+                                cropped_img = img.crop((left, top, right, bottom))
+                                cropped_img.save(output_file)
+                        else:
+                            await page.screenshot(path=output_file)
                         
                     except Exception as e:
                         print(f"Error rendering card {name}: {e}")

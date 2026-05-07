@@ -18,6 +18,11 @@ static_dir = os.path.join(os.path.dirname(__file__), "static")
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 log.debug("Mounted static files: /static")
 
+# Mount repositories for preview assets
+repositories_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "repositories"))
+app.mount("/repositories", StaticFiles(directory=repositories_dir), name="repositories")
+log.debug(f"Mounted repositories: {repositories_dir}")
+
 # Set up templates
 templates_dir = os.path.join(os.path.dirname(__file__), "templates")
 templates = Jinja2Templates(directory=templates_dir)
@@ -32,7 +37,7 @@ def run(
     port: int = 8000,
     reload: bool = False
 ):
-    global app, app_settings
+    global app
     if reload:
         uvicorn.run(
             "web.web_server:app",

@@ -1,3 +1,4 @@
+import base64
 from datetime import datetime
 from fastapi import APIRouter, Request, Response, Form
 from fastapi.responses import HTMLResponse
@@ -36,10 +37,10 @@ SAMPLE_CONTEXT = {
             "unshaped": 2,
         },
         "devotion": {
-            "elements": ["Aqua"],
+            "elements": ["aqua"],
         },
         "elemental": {
-            "element": "Aqua",
+            "element": "aqua",
             "amount": 1,
         },
         "stats": {
@@ -223,7 +224,15 @@ async def preview_card(request: Request):
         # Clean up
         shutil.rmtree(temp_dir)
 
-        return Response(content=image_data, media_type="image/png")
+        image_base64 = base64.b64encode(image_data).decode('utf-8')
+
+        # Replace local paths with web paths for the user's HTML view
+        web_html_content = html_content.replace(repositories_path, "/repositories")
+
+        return {
+            "image": f"data:image/png;base64,{image_base64}",
+            "html": web_html_content
+        }
 
     except Exception as e:
         import traceback

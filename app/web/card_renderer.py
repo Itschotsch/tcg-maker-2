@@ -40,6 +40,7 @@ async def render_cards(request: Request):
     cut_off_bleed = form_data.get("cut_off_bleed") == "true"
     internal_edition_label = form_data.get("internal_edition_label")
     specify_card_ids = form_data.get("specify_card_ids") == "true"
+    force_template = form_data.get("force_template")
 
     # Find the selected input adapter
     input_adapter: input_manager.InputAdapter
@@ -81,6 +82,7 @@ async def render_cards(request: Request):
             "create_card_list": create_card_list,
             "render_cards": render_cards,
             "internal_edition_label": internal_edition_label,
+            "force_template": force_template,
         },
         "card": {
             "bleed": {

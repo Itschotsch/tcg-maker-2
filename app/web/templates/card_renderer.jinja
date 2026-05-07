@@ -82,6 +82,19 @@
         </div>
     </fieldset>
     <fieldset class="field">
+        <label class="label">Force template</label>
+        <div class="control">
+          <div class="select">
+            <select name="force_template" id="force-template">
+              <option value="Auto">Auto</option>
+              <option value="Charakter">Charakter</option>
+              <option value="Ereignis">Ereignis</option>
+              <option value="Held">Held</option>
+            </select>
+          </div>
+        </div>
+    </fieldset>
+    <fieldset class="field">
         <div class="control">
             <label class="checkbox">
                 <input type="checkbox" name="cut_off_bleed" value="true" checked>
@@ -117,12 +130,23 @@
             const commitCheckbox = document.querySelector('input[name="commit_to_repo"]');
             const internalEditionLabel = document.getElementById('internal_edition_label');
             const cardListCheckbox = document.querySelector('input[name="create_card_list"]');
+            
+            const renderCheckbox = document.querySelector('input[name="render_cards"]');
+            const forceTemplateSelect = document.getElementById('force-template');
+
             const updateRepoExportFolderState = function() {
                 internalEditionLabel.disabled = !commitCheckbox.checked;
                 cardListCheckbox.disabled = !commitCheckbox.checked;
             };
+            const updateForceTemplateState = function() {
+                forceTemplateSelect.disabled = !renderCheckbox.checked;
+            };
+
             commitCheckbox.addEventListener('change', updateRepoExportFolderState);
+            renderCheckbox.addEventListener('change', updateForceTemplateState);
+            
             updateRepoExportFolderState();
+            updateForceTemplateState();
         })();
     </script>
     <fieldset class="field mt-5">

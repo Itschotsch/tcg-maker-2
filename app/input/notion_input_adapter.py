@@ -191,6 +191,8 @@ def sanitise_notion_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     df = df.rename(columns={"Element": "elemental_element"})
     print("Elemental Element before:", df["elemental_element"].unique())
     df["elemental_element"] = df["elemental_element"].apply(sanitise_relation_name)
+    df["elemental_element"] = df["elemental_element"].astype("string")
+    df["elemental_element"] = df["elemental_element"].str.lower()
     print("Elemental Element after:", df["elemental_element"].unique())
 
     # Elemental Amount

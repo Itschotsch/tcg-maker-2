@@ -219,12 +219,18 @@ class AnorProcessAdapter(ProcessAdapter):
                     },
                 )
 
+                # Determine template
+                template_name = data['entity']['layout']
+                force_template = configuration.get("meta", {}).get("force_template")
+                if force_template and force_template != "Auto":
+                    template_name = force_template
+
                 data["meta"] = {
                     "style": {
                         "path": f"{repositories_path}/anor/templates/style.jinja",
                     },
                     "template": {
-                        "path": f"{repositories_path}/anor/templates/{data['entity']['layout']}.jinja",
+                        "path": f"{repositories_path}/anor/templates/{template_name}.jinja",
                     },
                     "artworks": {
                         "path": f"{repositories_path}/anor/artworks/",

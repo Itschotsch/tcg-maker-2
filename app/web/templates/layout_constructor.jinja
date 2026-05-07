@@ -40,11 +40,34 @@
     </div>
 
     <!-- Right side: Preview -->
-    <div class="column is-6 has-background-light" style="display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: auto; padding: 20px;">
+    <div class="column is-6 has-background-light" style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; overflow: auto; padding: 20px;">
+        <div class="tabs is-toggle is-fullwidth mb-4" id="preview-tabs" style="width: 100%; max-width: 820px;">
+            <ul>
+                <li class="is-active" data-tab="rendered">
+                    <a>
+                        <span class="icon is-small"><i class="fas fa-image"></i></span>
+                        <span>Rendered</span>
+                    </a>
+                </li>
+                <li data-tab="html">
+                    <a>
+                        <span class="icon is-small"><i class="fas fa-code"></i></span>
+                        <span>HTML Source</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
         <div id="preview-container" style="position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.2); background: white;">
-            <img id="preview-image" src="" alt="Card Preview" style="display: none; max-width: 100%; height: auto;">
+            <div id="tab-content-rendered">
+                <img id="preview-image" src="" alt="Card Preview" style="display: none; max-width: 100%; height: auto;">
+            </div>
+            <div id="tab-content-html" style="display: none; width: 820px; height: 1120px; background: white;">
+                <iframe id="preview-html-iframe" style="width: 100%; height: 100%; border: none;"></iframe>
+            </div>
+            
             <div id="loader" class="loader is-loading" style="width: 80px; height: 80px; border-width: 4px; display: none;"></div>
-            <div id="placeholder" class="has-text-grey">
+            <div id="placeholder" class="has-text-grey p-6 has-text-centered">
                 <span class="icon is-large">
                     <i class="fas fa-image fa-3x"></i>
                 </span>
@@ -171,6 +194,18 @@
             });
         });
 
+        // Preview Tab Switching
+        document.querySelectorAll('#preview-tabs li').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+                document.querySelectorAll('#preview-tabs li').forEach(t => t.classList.remove('is-active'));
+                tab.classList.add('is-active');
+                
+                document.getElementById('tab-content-rendered').style.display = tabName === 'rendered' ? 'block' : 'none';
+                document.getElementById('tab-content-html').style.display = tabName === 'html' ? 'block' : 'none';
+            });
+        });
+
         // Options listeners
         document.getElementById('show-cut-line').addEventListener('change', () => {
             updatePreview();
@@ -229,11 +264,17 @@
             });
 
             if (response.ok) {
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-                previewImg.src = url;
+                const data = await response.json();
+                
+                // Update Image
+                previewImg.src = data.image;
                 previewImg.style.display = 'block';
                 previewImg.style.opacity = '1';
+                
+                // Update HTML Iframe
+                const iframe = document.getElementById('preview-html-iframe');
+                iframe.srcdoc = data.html;
+                
                 lastUpdate.innerText = new Date().toLocaleTimeString();
             } else {
                 const errorText = await response.text();

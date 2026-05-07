@@ -173,7 +173,7 @@ class AnorProcessAdapter(ProcessAdapter):
                             },
                             "description": html_util.clean_html_text(get_or_none(row, "description")),
                             "artwork": {
-                                "path": f"{repositories_path}/anor/artworks/{get_or_none(row, "ID")}.png",
+                                "path": f"{repositories_path}/anor/artworks/{get_or_none(row, 'ID')}.png",
                             },
                             "flavour": get_or_none(row, "flavour"),
                             "cost": {
@@ -183,6 +183,21 @@ class AnorProcessAdapter(ProcessAdapter):
                                 "ignis": get_or_none(row, "cost_ignis"),
                                 "magica": get_or_none(row, "cost_magica"),
                                 "unshaped": get_or_none(row, "cost_unshaped"),
+                            },
+                            "devotion": {
+                                "elements": (
+                                    lambda costs: (
+                                        ["unshaped"] if max(costs.values()) == 0 else
+                                        [element for element, cost in costs.items() if cost == max(costs.values())]
+                                    )
+                                )({
+                                    "terra": self._parse_cost(get_or_none(row, "cost_terra")),
+                                    "aqua": self._parse_cost(get_or_none(row, "cost_aqua")),
+                                    "aeris": self._parse_cost(get_or_none(row, "cost_aeris")),
+                                    "ignis": self._parse_cost(get_or_none(row, "cost_ignis")),
+                                    "magica": self._parse_cost(get_or_none(row, "cost_magica")),
+                                    "unshaped": self._parse_cost(get_or_none(row, "cost_unshaped")),
+                                })
                             },
                             "elemental": {
                                 "element": get_or_none(row, "elemental_element"),

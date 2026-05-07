@@ -35,6 +35,9 @@ SAMPLE_CONTEXT = {
             "magica": 0,
             "unshaped": 2,
         },
+        "devotion": {
+            "elements": ["Aqua"],
+        },
         "elemental": {
             "element": "Aqua",
             "amount": 1,
@@ -91,6 +94,7 @@ async def constructor_page(request: Request):
         "Charakter.jinja": "",
         "Ereignis.jinja": "",
         "Manifestation.jinja": "",
+        "Held.jinja": "",
         "style.jinja": ""
     }
 

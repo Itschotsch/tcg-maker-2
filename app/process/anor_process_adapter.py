@@ -154,7 +154,7 @@ class AnorProcessAdapter(ProcessAdapter):
                 return None
             return row[column]
 
-        for index, row in data.iterrows():
+        for seq_idx, (index, row) in enumerate(data.iterrows(), start=1):
             # CSV: Kosten Aqua,Charakter Pipeline,Element,Kartenart,⭕️,Kartentext,Kartentyp,Design Skelett,Kosten Ignis,ID,Erstellungsdatum,⚔️,Flavourtext,Erstellt von,Kosten Ungeprägt,Idee Brackground,🛡️,Slot zugewiesen,Status,Kosten Aeris,Einzigartig,Set Release,Kartentext-Planung,Kosten Terra,Kosten Magica,Letzte Änderung,Rarität,Name,PageID,Row_Hash
 
             try:
@@ -164,6 +164,7 @@ class AnorProcessAdapter(ProcessAdapter):
                     {
                         "entity": {
                             "id": get_or_none(row, "ID"),
+                            "index": seq_idx,
                             "layout": get_or_none(row, "kind"),
                             "kind": get_or_none(row, "kind"),
                             "type": get_or_none(row, "type"),
@@ -225,12 +226,14 @@ class AnorProcessAdapter(ProcessAdapter):
                 if force_template and force_template != "Auto":
                     template_name = force_template
 
+                release_id = configuration.get("release", {}).get("id", "Playtest")
+
                 data["meta"] = {
                     "style": {
-                        "path": f"{repositories_path}/anor/templates/style.jinja",
+                        "path": f"{repositories_path}/anor/templates/{release_id}/style.jinja",
                     },
                     "template": {
-                        "path": f"{repositories_path}/anor/templates/{template_name}.jinja",
+                        "path": f"{repositories_path}/anor/templates/{release_id}/{template_name}.jinja",
                     },
                     "artworks": {
                         "path": f"{repositories_path}/anor/artworks/",
@@ -242,7 +245,7 @@ class AnorProcessAdapter(ProcessAdapter):
                         "path": f"{repositories_path}/anor/layout/",
                     },
                     "templates": {
-                        "path": f"{repositories_path}/anor/templates/",
+                        "path": f"{repositories_path}/anor/templates/{release_id}/",
                     },
                 }
                 datas.append(data)

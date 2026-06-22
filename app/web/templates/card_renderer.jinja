@@ -67,9 +67,15 @@
         })();
     </script>
     <fieldset class="field">
-        <label class="label">Release Label</label>
+        <label class="label">Release ID</label>
         <div class="control">
-            <input class="input" type="text" name="release_label" placeholder="α" value="α">
+            <div class="select">
+                <select name="release_id">
+                    {% for release in releases %}
+                        <option value="{{ release }}">{{ release }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
     </fieldset>
     <hr />

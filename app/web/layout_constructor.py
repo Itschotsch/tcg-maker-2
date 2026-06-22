@@ -19,6 +19,7 @@ router = APIRouter()
 SAMPLE_CONTEXT = {
     "entity": {
         "id": 486,
+        "index": 1,
         "layout": "Charakter",
         "kind": "Charakter",
         "type": "Abenteurer",
@@ -26,7 +27,7 @@ SAMPLE_CONTEXT = {
             "primary": "Sarius",
             "secondary": "Kundschafter der Hofkanzlei",
         },
-        "description": "Wenn <self>ich</self> das <zone>Feld</zone> <key>betrete</key>, <key>Ziehe</key> eine <key>Karte</key> und wähle 2x:\n<ul>\n<li>Sieh Dir 2 <key>Schildkarte</key> Deiner Wahl an.</li>\n<li>Sieh Dir 1 <zone>Handkarten</zone> Deiner Wahl an.</li>\n</ul>",
+        "description": "Wenn <self>ich</self> das <zone>Feld</zone> <key>betrete</key>, wähle dreimal: <ul> <li><key>Ziehe</key> eine <key>Karte</key>.</li> <li>Sieh Dir eine <zone>Schildkarte</zone> Deiner Wahl an.</li> <li>Sieh Dir zwei <zone>Handkarten</zone> Deiner Wahl an.</li> </ul>",
         "flavour": "Diesmal war der Schrei des Ausgucks eine Erlösung.",
         "cost": {
             "terra": 0,
@@ -45,20 +46,15 @@ SAMPLE_CONTEXT = {
         },
         "stats": {
             "offensive": {
-                "strength": 4,
-                "toughness": 3,
+                "strength": 15,
+                "toughness": 15,
             },
             "defensive": {
-                "strength": 2,
-                "toughness": 5,
+                "strength": 10,
+                "toughness": 15,
             },
         },
         "rarity": "Rare",
-    },
-    "release": {
-        "label": {
-            "display": "dev"
-        }
     },
     "card": {
         "width": {
@@ -86,10 +82,22 @@ SAMPLE_CONTEXT = {
 }
 
 @router.get("/layout_constructor")
-async def constructor_page(request: Request):
+async def constructor_page(request: Request, release: str = "Playtest"):
     # Load templates from the repository
     repositories_path = os.path.join(os.getcwd(), "repositories")
-    templates_path = os.path.join(repositories_path, "anor", "templates")
+    templates_root = os.path.join(repositories_path, "anor", "templates")
+    
+    # Get available releases dynamically
+    releases = ["Playtest", "Release1-StarterDecks"]
+    if os.path.isdir(templates_root):
+        dir_releases = [name for name in os.listdir(templates_root) if os.path.isdir(os.path.join(templates_root, name)) and not name.startswith('.')]
+        if dir_releases:
+            releases = sorted(dir_releases, key=lambda x: (x != "Playtest", x))
+            
+    if release not in releases:
+        release = releases[0]
+
+    templates_path = os.path.join(templates_root, release)
     
     files = {
         "Charakter.jinja": "",
@@ -117,6 +125,8 @@ async def constructor_page(request: Request):
             "author": "Aetherlab",
             "files": files,
             "default_data": default_data,
+            "releases": releases,
+            "current_release": release,
             "now": datetime.now(),
         }
     )
@@ -127,6 +137,7 @@ async def preview_card(request: Request):
         payload = await request.json()
         files = payload.get("files", {})
         data_json = files.get("data.json", "{}")
+        release = payload.get("release", "Playtest")
         
         import json
         context = json.loads(data_json)
@@ -154,7 +165,7 @@ async def preview_card(request: Request):
             context["meta"] = {}
         
         context["meta"]["layout"] = {"path": os.path.join(anor_repo_path, "layout")}
-        context["meta"]["templates"] = {"path": os.path.join(anor_repo_path, "templates")}
+        context["meta"]["templates"] = {"path": os.path.join(anor_repo_path, "templates", release)}
         context["meta"]["fonts"] = {"path": os.path.join(anor_repo_path, "fonts")}
         context["meta"]["artworks"] = {"path": os.path.join(anor_repo_path, "artworks")}
         

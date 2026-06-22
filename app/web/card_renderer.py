@@ -10,6 +10,17 @@ from web import web_server
 
 router = APIRouter()
 
+def get_available_releases() -> list[str]:
+    templates_path = os.path.join(os.getcwd(), "repositories", "anor", "templates")
+    if not os.path.isdir(templates_path):
+        return ["Playtest", "Release1-StarterDecks"]
+    releases = []
+    for name in os.listdir(templates_path):
+        if os.path.isdir(os.path.join(templates_path, name)) and not name.startswith('.'):
+            releases.append(name)
+    releases.sort(key=lambda x: (x != "Playtest", x))
+    return releases if releases else ["Playtest", "Release1-StarterDecks"]
+
 @router.get("/card_renderer")
 async def main(request: Request):
     return web_server.templates.TemplateResponse(
@@ -22,6 +33,7 @@ async def main(request: Request):
             "input_adapters": input_manager.adapters,
             "output_adapters": output_manager.adapters,
             "process_adapters": process_manager.adapters,
+            "releases": get_available_releases(),
             "now": datetime.now(),
         }
     )
@@ -33,7 +45,6 @@ async def render_cards(request: Request):
     output_adapter_name = form_data.get("output_adapter")
     process_adapter_name = form_data.get("process_adapter")
     card_ids_str = form_data.get("card_ids")
-    release_label = form_data.get("release_label")
     commit_to_repo = form_data.get("commit_to_repo") == "true"
     create_card_list = form_data.get("create_card_list") == "true"
     render_cards = form_data.get("render_cards") == "true"
@@ -41,6 +52,7 @@ async def render_cards(request: Request):
     internal_edition_label = form_data.get("internal_edition_label")
     specify_card_ids = form_data.get("specify_card_ids") == "true"
     force_template = form_data.get("force_template")
+    release_id = form_data.get("release_id") or "Playtest"
 
     # Find the selected input adapter
     input_adapter: input_manager.InputAdapter
@@ -120,9 +132,7 @@ async def render_cards(request: Request):
             "cut_off_bleed": cut_off_bleed,
         },
         "release": {
-            "label": {
-                "display": release_label if release_label else None
-            }
+            "id": release_id,
         },
     }
 

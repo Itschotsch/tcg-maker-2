@@ -27,6 +27,21 @@
         <div id="editor-container" style="flex-grow: 1;"></div>
         <div id="options-container" class="p-5 has-background-dark has-text-white" style="flex-grow: 1; display: none;">
             <h3 class="title is-4 has-text-white mb-4">Preview Options</h3>
+            <div class="field mb-4">
+                <label class="label has-text-white">Template Release</label>
+                <div class="control">
+                    <div class="select">
+                        <select id="release-selector">
+                            {% for r in releases %}
+                                <option value="{{ r }}" {% if r == current_release %}selected{% endif %}>{{ r }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <p class="is-size-7 has-text-grey-light mt-2">
+                    Switching the release will reload the constructor to edit templates from that release.
+                </p>
+            </div>
             <div class="field">
                 <label class="checkbox">
                     <input type="checkbox" id="show-cut-line" checked class="mr-1">
@@ -211,6 +226,11 @@
             updatePreview();
         });
 
+        document.getElementById('release-selector').addEventListener('change', (e) => {
+            const selectedRelease = e.target.value;
+            window.location.href = `/layout_constructor?release=${selectedRelease}`;
+        });
+
         function updateActiveLayoutUI(filename) {
             document.querySelectorAll('.active-layout-tag').forEach(tag => {
                 tag.style.display = 'none';
@@ -259,7 +279,8 @@
                 body: JSON.stringify({ 
                     files: filesPayload,
                     activeLayout: activeLayoutFilename,
-                    showCutLine: showCutLine
+                    showCutLine: showCutLine,
+                    release: document.getElementById('release-selector').value
                 })
             });
 

@@ -124,9 +124,10 @@ class NotionInputAdapter(InputAdapter):
         df.to_csv(raw_csv_path, index=False)
         log.info(f"Raw Notion data saved to {raw_csv_path}")
 
-        return sanitise_notion_dataframe(df)
+        use_planning_text = configuration.get("meta", {}).get("use_planning_text", False)
+        return sanitise_notion_dataframe(df, use_planning_text=use_planning_text)
 
-def sanitise_notion_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+def sanitise_notion_dataframe(df: pd.DataFrame, use_planning_text: bool = False) -> pd.DataFrame:
 
     print("Sanitising dataframe...")
 
@@ -172,7 +173,14 @@ def sanitise_notion_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     df = df.drop(columns=["Name"])
 
     # Description
-    df["description"] = df.apply(lambda row: row["Kartentext"] if pd.notna(row["Kartentext"]) else row["Kartentext-Planung"], axis=1)
+    def choose_text(row):
+        val = row["Kartentext-Planung"] if use_planning_text else row["Kartentext"]
+        alt = row["Kartentext"] if use_planning_text else row["Kartentext-Planung"]
+        if pd.notna(val) and str(val).strip() != "":
+            return val
+        return alt
+
+    df["description"] = df.apply(choose_text, axis=1)
     df = df.drop(columns=["Kartentext", "Kartentext-Planung"])
 
     # Flavour

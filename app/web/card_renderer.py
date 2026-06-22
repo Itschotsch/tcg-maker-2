@@ -53,6 +53,7 @@ async def render_cards(request: Request):
     specify_card_ids = form_data.get("specify_card_ids") == "true"
     force_template = form_data.get("force_template")
     release_id = form_data.get("release_id") or "Playtest"
+    use_planning_text = form_data.get("use_planning_text") == "true"
 
     # Find the selected input adapter
     input_adapter: input_manager.InputAdapter
@@ -95,6 +96,7 @@ async def render_cards(request: Request):
             "render_cards": render_cards,
             "internal_edition_label": internal_edition_label,
             "force_template": force_template,
+            "use_planning_text": use_planning_text,
         },
         "card": {
             "bleed": {

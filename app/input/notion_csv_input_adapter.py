@@ -19,4 +19,5 @@ class NotionCSVInputAdapter(CSVInputAdapter):
 
     async def read(self, configuration: dict) -> pd.DataFrame:
         df: pd.DataFrame = await super().read(configuration, sanitise=False)
-        return sanitise_dataframe(sanitise_notion_dataframe(df))
+        use_planning_text = configuration.get("meta", {}).get("use_planning_text", False)
+        return sanitise_dataframe(sanitise_notion_dataframe(df, use_planning_text=use_planning_text))

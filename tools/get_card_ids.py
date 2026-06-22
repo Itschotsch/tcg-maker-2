@@ -61,68 +61,135 @@ def load_card_database(csv_path):
 def main():
     # Setup argument parsing
     import argparse
-    parser = argparse.ArgumentParser(description="Lookup card IDs from names using Notion CSV export.")
+    parser = argparse.ArgumentParser(description="Lookup card IDs from names using Notion CSV export or JSON card list.")
+    
+    # Mutually exclusive input formats
+    input_group = parser.add_mutually_exclusive_group()
+    input_group.add_argument(
+        "--tcg-arena-decklist", "-d",
+        action="store_true",
+        help="Input is a TCG Arena decklist (default)"
+    )
+    input_group.add_argument(
+        "--tcg-arena-card-list", "-c",
+        action="store_true",
+        help="Input is a TCG Arena card list in JSON format"
+    )
+    
+    # Mutually exclusive output formats
+    output_group = parser.add_mutually_exclusive_group()
+    output_group.add_argument(
+        "--new-line-list",
+        action="store_true",
+        help="Output IDs as a newline-separated list (default)"
+    )
+    output_group.add_argument(
+        "--comma-separated-list",
+        action="store_true",
+        help="Output IDs as a comma-separated list"
+    )
+    
     parser.add_argument(
         "input_file", 
         nargs="?", 
-        help="Path to a text file containing the list of cards. If omitted or '-', reads from stdin."
+        help="Path to the input file. If omitted or '-', reads from stdin."
     )
     parser.add_argument(
         "--csv", 
         default=DEFAULT_CSV_PATH,
-        help="Path to the Notion database CSV file to use for lookup."
+        help="Path to the Notion database CSV file to use for lookup (only used in decklist mode)."
     )
     args = parser.parse_args()
 
-    # Load the card database
-    name_to_ids = load_card_database(args.csv)
-
-    # Read input lines
-    input_lines = []
+    # Determine input mode (default to decklist)
+    is_json_mode = args.tcg_arena_card_list
+    
+    # Read input text
     if not args.input_file or args.input_file == "-":
         if sys.stdin.isatty():
-            print("Enter/paste your card list (press Ctrl+D when finished):", file=sys.stderr)
-        input_lines = sys.stdin.readlines()
+            mode_name = "JSON card list" if is_json_mode else "card list"
+            print(f"Enter/paste your {mode_name} (press Ctrl+D when finished):", file=sys.stderr)
+        input_text = sys.stdin.read()
     else:
         if not os.path.exists(args.input_file):
             print(f"Error: Input file '{args.input_file}' not found.", file=sys.stderr)
             sys.exit(1)
         with open(args.input_file, 'r', encoding='utf-8') as f:
-            input_lines = f.readlines()
+            input_text = f.read()
 
-    # Process each line
     found_ids = set()
     missing_cards = []
 
-    for line in input_lines:
-        card_name = parse_input_line(line)
-        if not card_name:
-            continue
-        
-        norm_name = normalize_name(card_name)
-        if norm_name in name_to_ids:
-            for card_id in name_to_ids[norm_name]:
-                try:
-                    # Attempt to store as integer for proper numeric sorting later
-                    found_ids.add(int(card_id))
-                except ValueError:
-                    found_ids.add(card_id)
+    if is_json_mode:
+        import json
+        if not input_text.strip():
+            print("Error: Input is empty.", file=sys.stderr)
+            sys.exit(1)
+        try:
+            data = json.loads(input_text)
+        except json.JSONDecodeError as e:
+            print(f"Error: Invalid JSON input: {e}", file=sys.stderr)
+            sys.exit(1)
+            
+        if isinstance(data, dict):
+            for key, val in data.items():
+                card_id = key
+                if isinstance(val, dict) and "id" in val:
+                    card_id = val["id"]
+                card_id_str = str(card_id).strip()
+                if card_id_str:
+                    try:
+                        found_ids.add(int(card_id_str))
+                    except ValueError:
+                        found_ids.add(card_id_str)
+        elif isinstance(data, list):
+            for val in data:
+                if isinstance(val, dict) and "id" in val:
+                    card_id_str = str(val["id"]).strip()
+                    if card_id_str:
+                        try:
+                            found_ids.add(int(card_id_str))
+                        except ValueError:
+                            found_ids.add(card_id_str)
         else:
-            missing_cards.append(card_name)
+            print("Error: JSON must be a dictionary or a list of card objects.", file=sys.stderr)
+            sys.exit(1)
+    else:
+        # Load the card database
+        name_to_ids = load_card_database(args.csv)
+        
+        # Process line by line
+        input_lines = input_text.splitlines()
+        for line in input_lines:
+            card_name = parse_input_line(line)
+            if not card_name:
+                continue
+            
+            norm_name = normalize_name(card_name)
+            if norm_name in name_to_ids:
+                for card_id in name_to_ids[norm_name]:
+                    try:
+                        found_ids.add(int(card_id))
+                    except ValueError:
+                        found_ids.add(card_id)
+            else:
+                missing_cards.append(card_name)
 
-    # Output found IDs, sorted
-    # We sort integers first, then strings if any
+    # Sort the unique IDs
     int_ids = sorted([x for x in found_ids if isinstance(x, int)])
     str_ids = sorted([str(x) for x in found_ids if not isinstance(x, int)])
     
-    # Print the unique, sorted IDs to stdout
-    for card_id in int_ids:
-        print(card_id)
-    for card_id in str_ids:
-        print(card_id)
+    all_ids = [str(x) for x in int_ids] + str_ids
 
-    # Print warnings for missing cards to stderr
-    if missing_cards:
+    # Format output
+    if args.comma_separated_list:
+        print(",".join(all_ids))
+    else:
+        for card_id in all_ids:
+            print(card_id)
+
+    # Print warnings for missing cards to stderr (only applicable in decklist mode)
+    if not is_json_mode and missing_cards:
         print(f"\nWarning: The following {len(missing_cards)} cards could not be found in the database:", file=sys.stderr)
         for card in missing_cards:
             print(f"  - {card}", file=sys.stderr)

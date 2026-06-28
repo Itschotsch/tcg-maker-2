@@ -20,6 +20,7 @@ SAMPLE_CONTEXT = {
     "entity": {
         "id": 486,
         "index": 1,
+        "release_id": "88",
         "layout": "Charakter",
         "kind": "Charakter",
         "type": "Abenteurer",
@@ -27,7 +28,7 @@ SAMPLE_CONTEXT = {
             "primary": "Sarius",
             "secondary": "Kundschafter der Hofkanzlei",
         },
-        "description": "Wenn <self>ich</self> das <zone>Feld</zone> <key>betrete</key>, wähle dreimal: <ul> <li><key>Ziehe</key> eine <key>Karte</key>.</li> <li>Sieh Dir eine <zone>Schildkarte</zone> Deiner Wahl an.</li> <li>Sieh Dir zwei <zone>Handkarten</zone> Deiner Wahl an.</li> </ul>",
+        "description": "Wenn <self>ich</self> das Feld betrete, <key>ziehe</key> eine <key>Karte</key>. Wähle dann zweimal: <ul><li>Sieh Dir zwei <kind>Siegelkarten</kind> Deiner Wahl an.</li><li>Sieh Dir eine <kind>Handkarte</kind> Deiner Wahl an.</li></ul>",
         "flavour": "Diesmal war der Schrei des Ausgucks eine Erlösung.",
         "cost": {
             "terra": 0,

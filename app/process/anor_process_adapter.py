@@ -150,6 +150,8 @@ class AnorProcessAdapter(ProcessAdapter):
         datas: list[dict] = []
 
         def get_or_none(row: pd.Series, column: str) -> str | None:
+            if column not in row:
+                return None
             if pd.isna(row[column]):
                 return None
             return row[column]
@@ -165,6 +167,7 @@ class AnorProcessAdapter(ProcessAdapter):
                         "entity": {
                             "id": get_or_none(row, "ID"),
                             "index": seq_idx,
+                            "release_id": get_or_none(row, "release_id"),
                             "layout": get_or_none(row, "kind"),
                             "kind": get_or_none(row, "kind"),
                             "type": get_or_none(row, "type"),

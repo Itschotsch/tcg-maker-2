@@ -152,6 +152,7 @@ def sanitise_notion_dataframe(df: pd.DataFrame, use_planning_text: bool = False)
         "⭕️",
         "Rarität",
         "Set-Release",
+        "Veröffentlichungs-ID",
     ]]
 
     # ID
@@ -227,6 +228,17 @@ def sanitise_notion_dataframe(df: pd.DataFrame, use_planning_text: bool = False)
 
     # Set Release
     df = df.rename(columns={"Set-Release": "set_release"})
+
+    # Release ID
+    df = df.rename(columns={"Veröffentlichungs-ID": "release_id"})
+    def clean_release_id(val):
+        if pd.isna(val) or str(val).strip() == "" or str(val).strip().lower() == "nan":
+            return None
+        # Convert float like 12.0 to "12"
+        if isinstance(val, float):
+            return str(int(val))
+        return str(val).strip()
+    df["release_id"] = df["release_id"].apply(clean_release_id)
 
     print("Sanitised dataframe.")
 

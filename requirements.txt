@@ -10,4 +10,4 @@ playwright
 python-multipart
 notion-client==2.5.0 # notion2pandas does not yet support the latest notion-client version
 notion2pandas
-uvicorn
+uvicorn[standard]

@@ -39,11 +39,13 @@ def run(
 ):
     global app
     if reload:
+        app_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
         uvicorn.run(
             "web.web_server:app",
             host=host,
             port=port,
             reload=True,
+            reload_dirs=[app_dir],
         )
     else:
         uvicorn.run(
